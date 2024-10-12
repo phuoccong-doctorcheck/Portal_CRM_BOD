@@ -1,12 +1,5 @@
 @use 'sass:math';
-@import "./colors.scss";
-@import "./fonts.scss";
-@import "./functions.scss";
-@import "./animation.scss";
-@import "./breakpoints.scss";
-
-@import "./variables.scss";
-
+@import './colors.scss';
 @mixin text-overflow($number: 1) {
     -webkit-box-orient: vertical;
     display: -webkit-box;

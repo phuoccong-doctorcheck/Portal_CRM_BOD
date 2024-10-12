@@ -2,24 +2,25 @@
 /* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-
-
-// import { AdministrativeItem } from "components/molecules/RenderMedicalRecord";
-// import {
-//   EmailInfos,
-//   SMSInfos,
-// } from "components/templates/LinkedAccountSetting";
-// import {
-//   InfosNotify,
-//   InfosSocialAccount,
-// } from "components/templates/SettingMultiChannel";
+import { DropdownData } from "components/atoms/Dropdown";
+import { GroupCheckBoxItem } from "components/atoms/GroupCheckBox";
+import { GroupRadioType } from "components/atoms/GroupRadio";
+import { AdministrativeItem } from "components/molecules/RenderMedicalRecord";
+import {
+  EmailInfos,
+  SMSInfos,
+} from "components/templates/LinkedAccountSetting";
+import {
+  InfosNotify,
+  InfosSocialAccount,
+} from "components/templates/SettingMultiChannel";
 import moment from "moment";
-import { handleRenderGUID } from "../../utils/functions";
-import { DropdownData } from "../../components/common/Dropdown";
-import { GroupRadioType } from "../../components/common/GroupRadio";
-import { GroupCheckBoxItem } from "../../components/common/GroupCheckBox";
-
-
+import { AfterExaminationType } from "pages/AfterMedicalExamination";
+import { BookingScheduleType } from "pages/BookingSchedule";
+import { FormAddTodoStep } from "pages/Dashboard";
+import { MissCallType } from "pages/MissCall";
+import { EmployeeRankType } from "services/types";
+import { handleRenderGUID } from "utils/functions";
 
 export const menuAffiliate = [
   { id: 0, title: 'Hoa hồng CSKH', role: ["beforeExams", "normal"], },
@@ -474,73 +475,73 @@ export const dataExampleForBookingSchedule = [
   },
 ];
 
-// export const administrative: AdministrativeItem[] = [
-//   {
-//     id: 0,
-//     name: "Họ tên",
-//     type: "name",
-//   },
-//   {
-//     id: 1,
-//     name: "Giới tính",
-//     type: "gender",
-//   },
-//   {
-//     id: 2,
-//     name: "Năm sinh",
-//     type: "yearOfBirth",
-//   },
-//   {
-//     id: 3,
-//     name: "Nghề nghiệp",
-//     type: "carrer",
-//   },
-//   {
-//     id: 4,
-//     name: "Điện thoại",
-//     type: "phone",
-//   },
-//   {
-//     id: 6,
-//     name: "Đối tượng",
-//     type: "object",
-//   },
-//   {
-//     id: 7,
-//     name: "Mã thẻ",
-//     type: "ticketId",
-//   },
-//   {
-//     id: 8,
-//     name: "Thời hạn thẻ",
-//     type: "timeTicket",
-//   },
-//   {
-//     id: 5,
-//     name: "Địa chỉ",
-//     type: "address",
-//   },
-//   {
-//     id: 9,
-//     name: "Nơi KCB ban đầu",
-//     type: "KCB",
-//   },
-//   {
-//     id: 10,
-//     name: "Ngày khám",
-//     type: "date_medical",
-//   },
-//   {
-//     id: 11,
-//     name: "BS khám bệnh",
-//     type: "doctor",
-//   },
-//   {
-//     id: 12,
-//     name: "BS kê toa",
-//     type: "doctorPrescribes",
-//   },
-// ];
+export const administrative: AdministrativeItem[] = [
+  {
+    id: 0,
+    name: "Họ tên",
+    type: "name",
+  },
+  {
+    id: 1,
+    name: "Giới tính",
+    type: "gender",
+  },
+  {
+    id: 2,
+    name: "Năm sinh",
+    type: "yearOfBirth",
+  },
+  {
+    id: 3,
+    name: "Nghề nghiệp",
+    type: "carrer",
+  },
+  {
+    id: 4,
+    name: "Điện thoại",
+    type: "phone",
+  },
+  {
+    id: 6,
+    name: "Đối tượng",
+    type: "object",
+  },
+  {
+    id: 7,
+    name: "Mã thẻ",
+    type: "ticketId",
+  },
+  {
+    id: 8,
+    name: "Thời hạn thẻ",
+    type: "timeTicket",
+  },
+  {
+    id: 5,
+    name: "Địa chỉ",
+    type: "address",
+  },
+  {
+    id: 9,
+    name: "Nơi KCB ban đầu",
+    type: "KCB",
+  },
+  {
+    id: 10,
+    name: "Ngày khám",
+    type: "date_medical",
+  },
+  {
+    id: 11,
+    name: "BS khám bệnh",
+    type: "doctor",
+  },
+  {
+    id: 12,
+    name: "BS kê toa",
+    type: "doctorPrescribes",
+  },
+];
 
 export const DemoTicket = [
   {
@@ -1182,7 +1183,29 @@ export const optionDate2: GroupRadioType[] = [
     level: "2",
   },
 ];
-
+export const optionDate3: GroupRadioType[] = [
+  {
+    id: 0,
+    label: "Theo ngày",
+    value: moment(new Date()).subtract(1, "days").format("YYYY-MM-DD 00:00:00"),
+    color: "#f00",
+    level: "1",
+  },
+  {
+    id: 1,
+    label: "Theo tháng",
+    value: moment(new Date()).subtract(0, "days").format("YYYY-MM-DD 00:00:00"),
+    color: "#3471e4",
+    level: "2",
+  },
+  {
+    id: 2,
+    label: "Theo năm",
+    value: moment(new Date()).add(1, "days").format("YYYY-MM-DD 00:00:00"),
+    color: "#ffb301",
+    level: "3",
+  },
+];
 export const optionTypeCompare: GroupRadioType[] = [
   {
     id: 0,
@@ -1522,30 +1545,40 @@ export const optionsLevelNote = [
   { id: 1, value: "importance", label: "Quan trọng" },
 ];
 
-// export const exampleDataSocial: InfosSocialAccount[] = [
-//   {
-//     id: 1,
-//     icon: "zalo_channel",
-//     name: "Nguyen Van A",
-//     usename: "dainq@doctorcheck.vn",
-//     type: "zalo",
-//   },
-//   {
-//     id: 2,
-//     icon: "facebook_channel",
-//     name: "Nguyen Van A",
-//     usename: "dainq@doctorcheck.vn",
-//     type: "facebook",
-//   },
-// ];
+export const exampleDataSocial: InfosSocialAccount[] = [
+  {
+    id: 1,
+    icon: "zalo_channel",
+    name: "Nguyen Van A",
+    usename: "dainq@doctorcheck.vn",
+    type: "zalo",
+  },
+  {
+    id: 2,
+    icon: "facebook_channel",
+    name: "Nguyen Van A",
+    usename: "dainq@doctorcheck.vn",
+    type: "facebook",
+  },
+];
 
-// export const listNotification: InfosNotify[] = [
-//   {
-//     id: 1,
-//     content: "Nhận thông báo tin nhắn mới",
-//     enable: false,
-//   },
-// ];
+export const listNotification: InfosNotify[] = [
+  {
+    id: 1,
+    content: "Nhận thông báo tin nhắn mới",
+    enable: false,
+  },
+  // {
+  //   id: 2,
+  //   content: 'Đẩy thông báo ra màng hình chính',
+  //   enable: false,
+  // },
+  // {
+  //   id: 3,
+  //   content: 'Nhận thông báo về hoạt động khách hàng phụ trách',
+  //   enable: false,
+  // },
+];
 
 
 export const OptionYypeCampaign: DropdownData[] = [
@@ -1569,47 +1602,47 @@ export const OptionCustomerDestination = [
   { id: 3, label: "Khách hàng thường xuyên", value: "3" },
 ];
 
-// export const DataExampleForSMS: SMSInfos[] = [
-//   {
-//     id: 1,
-//     name: "Sip1",
-//     apiKey: "1223-2323-2332-5232",
-//     secretKey: "1223-2323-2332-5232",
-//     smsType: "sjs",
-//     branchName: "h",
-//     phone: "209823292387",
-//     isDisable: false,
-//   },
-//   {
-//     id: 2,
-//     name: "Sip2",
-//     apiKey: "1223-2323-2332-5232",
-//     secretKey: "1223-2323-2332-5232",
-//     smsType: "sjs",
-//     branchName: "h",
-//     phone: "0978129383",
-//     isDisable: true,
-//   },
-// ];
+export const DataExampleForSMS: SMSInfos[] = [
+  {
+    id: 1,
+    name: "Sip1",
+    apiKey: "1223-2323-2332-5232",
+    secretKey: "1223-2323-2332-5232",
+    smsType: "sjs",
+    branchName: "h",
+    phone: "209823292387",
+    isDisable: false,
+  },
+  {
+    id: 2,
+    name: "Sip2",
+    apiKey: "1223-2323-2332-5232",
+    secretKey: "1223-2323-2332-5232",
+    smsType: "sjs",
+    branchName: "h",
+    phone: "0978129383",
+    isDisable: true,
+  },
+];
 
-// export const ExampleDataForEmail: EmailInfos[] = [
-//   {
-//     id: 1,
-//     name: "Email cho Chăm sóc",
-//     apiKey: "2389-2343-2356-7657-4457",
-//     email: "chamsoc@doctorcheck.vn",
-//     senderName: "admin",
-//     isDisable: false,
-//   },
-//   {
-//     id: 2,
-//     name: "Email cho Chăm sóc 2",
-//     apiKey: "2389-2343-2356-7657-4457",
-//     email: "chamsoc@doctorcheck.vn",
-//     senderName: "admin",
-//     isDisable: true,
-//   },
-// ];
+export const ExampleDataForEmail: EmailInfos[] = [
+  {
+    id: 1,
+    name: "Email cho Chăm sóc",
+    apiKey: "2389-2343-2356-7657-4457",
+    email: "chamsoc@doctorcheck.vn",
+    senderName: "admin",
+    isDisable: false,
+  },
+  {
+    id: 2,
+    name: "Email cho Chăm sóc 2",
+    apiKey: "2389-2343-2356-7657-4457",
+    email: "chamsoc@doctorcheck.vn",
+    senderName: "admin",
+    isDisable: true,
+  },
+];
 
 export const templateExample =
   "<div> Khách đặt lịch từ website: www.doctorcheck.vn<br> Họ tên: <br> Điện thoại:<br> Ngày giờ đặt lịch:<br> Email: <br> Referer Page: <br> Ghi chú:</div>";

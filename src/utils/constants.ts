@@ -116,18 +116,18 @@ export interface DateExportExcel {
   to: Date;
 }
 
-// const handleReturnRow = (
-//   data: any,
-//   fromDay: Date,
-//   toDay: Date,
-//   from: number,
-//   to: number
-// ) => {
+const handleReturnRow = (
+  data: any,
+  fromDay: Date,
+  toDay: Date,
+  from: number,
+  to: number
+) => {
   // const countCustomer = data.filter((itemn:any) => new Date(moment(fromDay).add(from, 'days').format('YYYY-MM-DD 23:59:59')).valueOf() > new Date(itemn.update_date).valueOf()
   //     && new Date(itemn.update_date).valueOf() < new Date(moment(fromDay).add(to, 'days').format('YYYY-MM-DD 23:59:59')).valueOf()
   //     && new Date(moment(fromDay).add(to, 'days').format('YYYY-MM-DD 23:59:59')).valueOf() < new Date(moment(toDay).add(0, 'days').format('YYYY-MM-DD 23:59:59')).valueOf());
   // [countCustomer?.length, 'Hết bệnh', 'Tiến triển', 'Chưa hết', 'Tầm soát', 'Chưa nghe máy', 'Chưa đánh giá']
-//};
+};
 
 // Sử dụng hàm exportDataToExcel để xuất dữ liệu với header và data riêng
 // const header = ['Name', 'Age'];

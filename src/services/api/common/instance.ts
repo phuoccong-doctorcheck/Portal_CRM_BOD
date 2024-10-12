@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import Cookies from "js-cookie";
 
 const axiosInstance = axios.create({
-  baseURL: "https://crm-api-demo.doctorcheck.online/api"
+  baseURL: process.env.REACT_APP_API_BASE_URL_DEMO,
 });
 
 axiosInstance.interceptors.request.use(
-  ($config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+  ($config: AxiosRequestConfig): AxiosRequestConfig => {
     const token = Cookies.get("token");
     if ($config.headers) {
       $config.headers.Authorization = token ? token?.slice(2).toString() : "";

@@ -6,16 +6,16 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 const useWebSocket = (url: string) => {
   const socketRef = useRef<W3CWebSocket | null>(null);
   const [isConnected, setConnected] = useState<boolean>(false);
-    console.log(url)
+  console.log(url)
   useEffect(() => {
     const socket = new W3CWebSocket(url);
-
+    
     socket.onopen = () => {
       console.log("WebSocket Client Connected");
       setConnected(true);
     };
 
-    socket.onerror = (error:any) => {
+    socket.onerror = (error) => {
       console.error("Connection Error: ", error);
     };
 
@@ -24,7 +24,7 @@ const useWebSocket = (url: string) => {
       setConnected(false);
     };
 
-    socket.onmessage = (e:any) => {
+    socket.onmessage = (e) => {
       console.log("Received: " + e.data);
     };
 

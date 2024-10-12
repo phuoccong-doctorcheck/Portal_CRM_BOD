@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 // API PANCAKE là tổng hợp các tin nhắn bên thứ 3 như zalo, fb,... và đẩy qua bên đây
 const axiosPancakeInstance = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_PANCAKE,
@@ -6,7 +6,7 @@ const axiosPancakeInstance = axios.create({
 
 
 axiosPancakeInstance.interceptors.request.use(
-  ($config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+  ($config: AxiosRequestConfig): AxiosRequestConfig => {
     return $config;
   },
   async (error: AxiosError): Promise<AxiosError> => {

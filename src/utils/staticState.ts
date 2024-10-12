@@ -1,6 +1,35 @@
-import { DropdownData } from "../components/common/Dropdown";
+import { BarChartOutlined, DollarOutlined } from '@ant-design/icons';
+import { DropdownData } from "components/atoms/Dropdown";
 
 
+export const MenuCRM = [
+  {
+    groupId: "1",
+    groupName: "Quy trình",
+    items: [
+      {
+        id: 2,
+        name: "Kế hoạch Kinh Doanh",
+        icon:  BarChartOutlined,
+        slug: "/bussiness-plan",
+        role: ["businessplan", "cashflow"],
+        child: [],
+        isHaveChild: false,
+      },
+      {
+        id: 3,
+        name: "Dòng tiền",
+        icon:  DollarOutlined ,
+        slug: "/cash-flow",
+        role: ["cashflow", "businessplan"],
+        child: [],
+        isHaveChild: false,
+      },
+     
+    ],
+  },
+ 
+];
 export const MenuCRMMobile = [
   {
     id: 79,
@@ -131,9 +160,16 @@ export const MenuCRMMobile = [
         slug: "/wom",
         role: ["adDashBoard"],
       },
+      //   {
+      //   idChild: 5,
+      //   type: "customer",
+      //   title: "Kế hoạch kinh doanh",
+      //   slug: "/bussiness-plan",
+      //   role: ["adDashBoard"],
+      // },
     ],
     isHaveChild: true,
-  },
+  },  
   {
     id: 18,
     name: "Lịch sử cuộc gọi",
@@ -153,170 +189,6 @@ export const MenuCRMMobile = [
     isHaveChild: false,
   },
 ];
-
-export const MenuCRM = [
-  {
-    groupId: "1",
-    groupName: "Quy trình",
-    items: [
-      {
-        id: 2,
-        name: "Chuyển đổi",
-        icon: "conversion",
-        slug: "/conversion",
-        role: ["beforeExams", "adDashBoard", "normal"],
-        child: [],
-        isHaveChild: false,
-      },
-      {
-        id: 3,
-        name: "Danh sách lịch hẹn",
-        icon: "calendar_crm",
-        slug: "/track-booking",
-        role: ["appointmentView", "adDashBoard", "normal"],
-        child: [],
-        isHaveChild: false,
-      },
-      {
-        id: 4,
-        name: "Chăm sóc sau khám",
-        icon: "before_exams",
-        slug: "/after-exams",
-        role: ["afterExams", "adDashBoard", "normal"],
-        child: [],
-        isHaveChild: false,
-      },
-    ],
-  },
-  {
-    groupId: "2",
-    groupName: "Công cụ",
-    items: [
-      {
-        id: 5,
-        name: "Báo cáo",
-        icon: "report_crm2",
-        slug: "/growth",
-        role: ["adAnalytics"],
-        child: [],
-        isHaveChild: false,
-      },
-      {
-        id: 6,
-        name: "So sánh tăng trưởng",
-        icon: "balancer",
-        slug: "/growth-compare",
-        role: ["adAnalytics"],
-        child: [],
-        isHaveChild: false,
-      },
-      {
-        id: 7,
-        name: "Chiến dịch & QL Điểm",
-        icon: "marketing_crm",
-        slug: "/campaign",
-        role: ["campaign"],
-        child: [
-          {
-            idChild: 1,
-            title: "Quản lí điểm",
-            slug: "/point-management",
-            role: ["campaign"],
-          },
-          {
-            idChild: 2,
-            title: "Chiến dịch",
-            slug: "/campaign",
-            role: ["campaign"],
-          },
-        ],
-        isHaveChild: true,
-      },
-      {
-        id: 8,
-        name: "Đặt lịch",
-        icon: "list_appointment",
-        slug: "/grid-booking",
-        role: ["calendars", "adDashBoard", "normal"],
-        child: [],
-        isHaveChild: false,
-      },
-      {
-        id: 9,
-        name: "Cuộc gọi nhỡ",
-        icon: "misscall_crm",
-        slug: "/miss-call",
-        role: ["missCall", "adDashBoard", "normal"],
-        child: [],
-        isHaveChild: false,
-      },
-      {
-        id: 10,
-        name: "Thống kê",
-        icon: "report_crm",
-        slug: "/reports?type=grid",
-        role: ["adDashBoard", "normal"],
-        child: [
-          {
-            idChild: 1,
-            type: "customer",
-            title: "Thống kê khách hàng",
-            slug: "/reports?type=grid",
-            role: ["adDashBoard"],
-          },
-          {
-            idChild: 2,
-            type: "customer",
-            title: "Khách hàng tiềm năng",
-            slug: "/customer-leads",
-            role: ["campaign"],
-          },
-          {
-            idChild: 3,
-            type: "customer",
-            title: "Khách hàng theo loại",
-            slug: "/customer-f-type",
-            role: ["campaign"],
-          },
-          {
-            idChild: 4,
-            type: "cskh",
-            title: "Thống kê tiền thưởng",
-            slug: "/affiliate",
-            role: ["normal"],
-          },
-          // {
-          //   idChild: 4,
-          //   type: "customer",
-          //   title: "Khách hàng cũ giới thiệu",
-          //   slug: "/wom",
-          //   role: ["adDashBoard"],
-          // },
-        ],
-        isHaveChild: true,
-      },
-      {
-        id: 11,
-        name: "Lịch sử cuộc gọi",
-        icon: "histories_call",
-        slug: "/histories-call",
-        role: ["BOD"],
-        child: [],
-        isHaveChild: false,
-      },
-      {
-        id: 12,
-        name: "cài đặt",
-        icon: "setting_crm",
-        slug: "/setting",
-        role: ["adDashBoard", "normal"],
-        child: [],
-        isHaveChild: false,
-      },
-    ],
-  },
-];
-
 export const optionStateExchangeGift: DropdownData[] = [
   { id: 6, label: "Tất cả", value: "all" },
   { id: 8, label: "Đã đổi quà", value: "exchange" },

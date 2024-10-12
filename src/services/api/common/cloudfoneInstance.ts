@@ -1,11 +1,11 @@
-import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
 const axiosCloudfoneInstance = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_CLOUDFONE,
 });
 
 axiosCloudfoneInstance.interceptors.request.use(
-  ($config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+  ($config: AxiosRequestConfig): AxiosRequestConfig => {
     return $config;
   },
   async (error: AxiosError): Promise<AxiosError> => {

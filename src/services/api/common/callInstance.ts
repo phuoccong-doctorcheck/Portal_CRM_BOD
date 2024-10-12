@@ -1,12 +1,11 @@
-import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
 const callInstance = axios.create({
   baseURL: "https://restcall.doctorcheck.online/api/",
 });
 
 callInstance.interceptors.request.use(
-  // ($config: AxiosRequestConfig): AxiosRequestConfig => {
-    ($config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+  ($config: AxiosRequestConfig): AxiosRequestConfig => {
     if ($config.headers) {
       $config.headers["App-Id"] = "89304572146127564150679";
       $config.headers["App-Key"] = "BC2Sd4gr339w3vOc9s4psAQXk5U5==";
