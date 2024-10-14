@@ -79,10 +79,10 @@ const routes = [
     path: '/sso-crm',
     element: <LoginWithLink />, // login
   },
-  {
-    path: '/',
-    element: <Dashboard />, // trang chủ
-  },
+  // {
+  //   path: '/',
+  //   element: <Dashboard />, // trang chủ
+  // },
   // {
   //   path: '/growth',
   //   element: <ReportGrowthClinic />, // trươc khám

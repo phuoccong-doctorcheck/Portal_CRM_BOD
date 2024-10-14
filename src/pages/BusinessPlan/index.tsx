@@ -35,7 +35,7 @@ import PublicHeaderStatistic from "components/templates/PublicHeaderStatistic";
 import PublicLayout from "components/templates/PublicLayout";
 import { useSip } from "components/templates/SipProvider";
 import Cookies from "js-cookie";
-import _, { divide } from "lodash";
+import _, { divide, set } from "lodash";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from "react-query";
@@ -55,7 +55,7 @@ import { getInfosCustomerById } from "store/customerInfo";
 import { useAppDispatch, useAppSelector } from "store/hooks";
 import mapModifiers, { downloadBlobPDF, exportDatatoExcel, handleRenderGUID, previewBlobPDFOpenLink } from "utils/functions";
 import { stateAppointView } from "utils/staticState";
-import { Col, DatePicker, MenuProps, Radio, RadioChangeEvent, Row, Select, Table, Button as ButtonANTD } from 'antd';
+import { Col, DatePicker, MenuProps, Radio, RadioChangeEvent, Row, Select, Table, Button as ButtonANTD, Tag } from 'antd';
 import { RangePickerProps } from "antd/es/date-picker";
 import  dayjs, { Dayjs } from "dayjs";
 import { dataS, growthPercent, months } from "./dataS";
@@ -77,14 +77,14 @@ interface ExpandableTitleProps {
 }
 const ExpandableTitle: React.FC<ExpandableTitleProps> = ({ title, expanded, onToggle, hasChildren }) => {
   return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center', }}>
       {hasChildren === true ? (<div
       
         onClick={onToggle}
         style={{ marginRight: 8 }}
       ><span
             style={{ padding: "8px" }}
-            className={`custom-expand-icon icon-transition hoverButton ${expanded ? 'icon-expanded' : ''
+            className={`custom-expand-icon icon-transition sI1 sI2 sI3 sI4 hoverButton ${expanded ? 'icon-expanded' : ''
               }`}
           >
             {expanded ? <MinusOutlined /> : <PlusOutlined />}
@@ -99,8 +99,10 @@ const ExpandableTitle: React.FC<ExpandableTitleProps> = ({ title, expanded, onTo
               }`}
           >
            
-          </span></div>}
-      {title}
+        </span></div>}
+      <div className={hasChildren === false ? 'ST1 sI2 sI3 sI4' : ''}
+> {title}</div>
+     
     </div>
   );
 };
@@ -133,7 +135,6 @@ const LastYear = dayjs().year() - 1;
   const [listLaunchSources, setListLaunchSources] = useState<DropdownData[]>(
     storageLaunchSources ? JSON.parse(storageLaunchSources) : ""
   );
-  console.log(dataReportDate)
   const [appointmentStatistic, setAppointmentStatistic] = useState(storeStatistic.data);
   const [listAppointmentMaster, setListAppointmentMaster] = useState(storeAppointmentMaster);
   const [dataFinish, setDataFinish] = useState<AppointmentViewItem[]>(storeAppointmentMaster?.data?.data || [])
@@ -405,10 +406,17 @@ const LastYear = dayjs().year() - 1;
   ), [missingData,selectedMonth])
 
  
-  
+  const expenseItems = dataReportDate?.filter(item => item.sequence >= 6 && item.sequence <= 8);
+  const otherItems = dataReportDate?.filter(item => item.sequence < 6);
+  const [stateIdArray,setStateIdArray] = useState(0)
   const columns = [
   {
-    title: <Typography content="" modifiers={['12x18', '500', 'center', 'uppercase']} styles={{background:"white"}}/>,
+    title:   <div style={{display:"flex", alignItems:"center", justifyContent:"start"}}>
+      {otherItems?.map((item, index:number) => (
+         <div key={item.id} style={{fontSize:"14px", padding:"8px 12px", cursor:"pointer",   background: index === stateIdArray ? "white" : "#f1f1f1", color: index === stateIdArray ? "#ff0000" : "#333", borderRight:"2px solid white"}} onClick={() => setStateIdArray(index)} >{item.item_label}</div> 
+      ))}
+       {expenseItems?.length >0 &&  <div  style={{fontSize:"14px", padding:"8px 12px", cursor:"pointer",background:"#f1f1f1", borderRight:"2px solid white"}}>Chi phí</div>}
+    </div>,
     dataIndex: 'item_label',
     width: 600,
       key: 'item_label',
@@ -438,60 +446,81 @@ const LastYear = dayjs().year() - 1;
   ...columnsDate
   ];
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
-  
   const [recordInit, setRecordInit] = useState({
     items: [],
-    id:'DTDK'
+    id:'C1'
   })
   const [expandInit, setExpandInit] = useState(true)
   useEffect(() => {
-    if (dataReportDate?.length !== undefined) {
-       handleExpand(expandInit, recordInit)
+    if (dataReportDate?.[0] !== undefined) {
+       handleExpand(expandInit, dataReportDate?.[0]?.items?.[0])
     }
   }, [dataReportDate])
   useEffect(() => {
     setDataReportDate(storeReportPlan?.data?.items)
-  },[storeReportPlan])
-   const handleExpand = (expanded: boolean, record: any) => {
+  }, [storeReportPlan])
+const handleExpand = (expanded: boolean, record: any) => {
+  const currentKey = record.id;
+
+  if (expanded) {
+    // Lấy parentKey
+    const parentKey = getParentKey(currentKey, dataReportDate);
     
-     const currentKey = record.id;
-     if (expanded) {
-       // Xử lý khi mở rộng
-      const parentKey = getParentKey(currentKey);
-      // Nếu là thẻ cha, đóng tất cả các thẻ cha khác cùng cấp
-      if (parentKey === "") {
-        const siblingKeys = findSiblingKeys(dataReportDate, parentKey);
-        setExpandedKeys([...expandedKeys.filter(key => !siblingKeys.includes(key)), currentKey]);
-      } else {
-        // Nếu là thẻ con, đóng tất cả các thẻ con khác cùng cấp
-        const siblingKeys = findSiblingKeys(dataReportDate, parentKey);
-        setExpandedKeys([...expandedKeys.filter(key => !siblingKeys.includes(key)), currentKey]);
-      }
-     } else {
-       
-      // Khi thu gọn một dòng, loại bỏ key của dòng đó khỏi expandedKeys
-      setExpandedKeys((prev) =>  prev.filter((key) => key !== currentKey));
+    if (parentKey === null) {
+      // Nếu không có cha, xử lý các thẻ cấp trên (root level)
+      const siblingKeys = findSiblingKeys(dataReportDate, parentKey);
+      setExpandedKeys([...expandedKeys.filter((key) => !siblingKeys.includes(key)), currentKey]);
+    } else {
+      // Nếu có cha, đóng các thẻ con cùng cấp
+      const siblingKeys = findSiblingKeys(dataReportDate, parentKey);
+      setExpandedKeys([...expandedKeys.filter((key) => !siblingKeys.includes(key)), currentKey]);
     }
-  };
+  } else {
+    // Khi thu gọn, loại bỏ key khỏi expandedKeys
+    setExpandedKeys((prev) => prev.filter((key) => key !== currentKey));
+  }
+};
+
 
   // Hàm để lấy key của phần tử cha
-  const getParentKey = (key: string): string => {
-    return key;
-  };
-
-  // Tìm tất cả các khóa (keys) của các dòng cùng cấp
-  const findSiblingKeys = (items: any[], parentKey: string): string[] => {
-    for (const item of items) {
-      if (item.id === parentKey) {
-        return item.items?.map((child: any) => child.id) || [];
-      }
-      if (item.items) {
-        const result = findSiblingKeys(item.items, parentKey);
-        if (result.length > 0) return result;
+// Hàm để tìm key của phần tử cha
+const getParentKey = (key: string, items: any[]): string | null => {
+  for (const item of items) {
+    if (item.items && item.items.some((child: any) => child.id === key)) {
+      return item.id; // Trả về id của phần tử cha
+    }
+    if (item.items) {
+      const parentKey = getParentKey(key, item.items);
+      if (parentKey) {
+        return parentKey; // Trả về id cha nếu tìm thấy
       }
     }
-    return [];
-  };
+  }
+  return null; // Trả về null nếu không tìm thấy cha
+};
+
+
+
+  // Tìm tất cả các khóa (keys) của các dòng cùng cấp
+const findSiblingKeys = (items: any[], parentKey: string | null): string[] => {
+  if (parentKey === null) return [];
+  
+  for (const item of items) {
+    if (item.id === parentKey) {
+      // Trả về tất cả các phần tử cùng cấp
+      return item.items ? item.items.map((child: any) => child.id) : [];
+    }
+    if (item.items) {
+      const siblingKeys = findSiblingKeys(item.items, parentKey);
+      if (siblingKeys.length > 0) {
+        return siblingKeys;
+      }
+    }
+  }
+  return [];
+};
+
+
   const [example, setExample] = useState(0)
   const expandIcon: ExpandableConfig<any>['expandIcon'] = ({ expanded, onExpand, record }) => (
   <span
@@ -506,7 +535,7 @@ const LastYear = dayjs().year() - 1;
       <PublicTableBusiness
         column={columns}
         isHideRowSelect
-        listData={dataReportDate?.[0]?.items}
+        listData={dataReportDate?.[stateIdArray]?.items}
         rowkey="id"
         isPagination={false}
         isExpandable
@@ -529,7 +558,7 @@ const LastYear = dayjs().year() - 1;
         }}
     />
     );
-  }, [storeisLoadingAppointmentMaster, listAppointmentMaster?.data?.data, expandedKeys, example,dataReportDate]);
+  }, [storeisLoadingAppointmentMaster, listAppointmentMaster?.data?.data, expandedKeys, example,dataReportDate,stateIdArray]);
     const [fromDates, setFromDate] = useState("2024")
   const [toDates, setToDate] = useState("")
   const statisticHeader = useMemo(
@@ -605,11 +634,16 @@ const LastYear = dayjs().year() - 1;
 
   const handleGetMonthMiss = () => {
     if (mode === "date") {
+      setStateIdArray(0)
       dispatch(getReportPlan({ date: dataFilter.date } as any));
+       generateColumns(dataFilter.date);
       setModeButtonExcel(true)
     }
     else {
-       dispatch(getReportPlanMonth({ month: dataFilter.month.toString(),year:moment(dataFilter.year).format("YYYY") } as any));
+      setStateIdArray(0)
+
+      dispatch(getReportPlanMonth({ month: dataFilter.month.toString(), year: moment(dataFilter.year).format("YYYY") } as any));
+         generateColumns(dataFilter.date);
         setModeButtonExcel(true)
       
     }
@@ -825,21 +859,20 @@ const handlePrice = (data: any, i: any) => {
      for (let i = 0; i < 1; i++) {
        const currentDate = dates; // Only one date is provided
        const date = new Date(currentDate);
-
+      console.log(dates)
        const day = date.getDate();
        const month = date.getMonth() + 1; // Months are zero-indexed, so we add 1
-
-       const formattedDate = `Ngày ${moment(dataFilter.date).format("DD-MM-YYYY").toString()}`;
+       const formattedDate = `${mode == "date" ? dataFilter.date : dataFilter.month + "-" + dataFilter.year}`;
        newColumns.push({
-         title: (
+         title: ( 
            <Typography
-             content={formattedDate}
+             content={ "Ngày "+ dayjs(dataFilter.date ).format('DD-MM-YYYY')}
              modifiers={['14x20', '800', 'center', 'uppercase']}
              styles={{ textAlign: 'right', marginRight: '6px' }}
            />
          ),
          dataIndex: 'price',
-         key: formattedDate,
+         key: 'price',
          width: 200,
          className: 'ant-table-column_wrap',
          render: (record: any, data: any, index: any) => (
@@ -853,36 +886,38 @@ const handlePrice = (data: any, i: any) => {
        });
      }
    }
-  //  else {
-  //   const totalMonths = dates[1].diff(dates[0], 'month') + 1;
-
-  //   for (let i = 0; i < totalMonths; i++) {
-     
-  //     const currentMonth = dates[0].add(i, 'month');
-  //     newColumns.push({
-  //       title: (
-  //         <Typography
-  //           content={currentMonth.format('MM-YYYY')}
-  //           modifiers={['14x20', '800', 'center', 'uppercase']}
-  //           styles={{ textAlign: 'right', marginRight: '6px' }}
-  //         />
-  //       ),
-  //       dataIndex: 'price',
-  //       key: currentMonth.format('MM-YYYY'),
-  //       //   width: totalMonths > 5 ? 200 : 0,
-  //       width:200,
-  //       className: 'ant-table-column_wrap',
-  //       render: (record: any, data: any) => (
-  //         <div
-  //           className="ant-table-column_item"
-  //           style={{ display: 'flex', justifyContent: 'right', color: '#2c7287' }}
-  //         >
-  //           <Typography content={handlePrice(data,i)} modifiers={['13x18', '600', 'right']} />
-  //         </div>
-  //       ),
-  //     });
-  //   }
-  // }
+   else {
+  
+    for (let i = 0; i < 1; i++) {
+       const currentDate = dates; // Only one date is provided
+       const date = new Date(currentDate);
+      console.log(dates)
+       const day = date.getDate();
+       const month = date.getMonth() + 1; // Months are zero-indexed, so we add 1
+      // const formattedDate = `${mode == "date" ? dataFilter.date : dataFilter.month + "-" + dataFilter.year}`;
+       newColumns.push({
+         title: ( 
+           <Typography
+             content={"Tháng " + dataFilter.month + "-" + dataFilter.year}
+             modifiers={['14x20', '800', 'center', 'uppercase']}
+             styles={{ textAlign: 'right', marginRight: '6px' }}
+           />
+         ),
+         dataIndex: 'price',
+         key: 'price',
+         width: 200,
+         className: 'ant-table-column_wrap',
+         render: (record: any, data: any, index: any) => (
+           <div
+             className="ant-table-column_item"
+             style={{ display: 'flex', justifyContent: 'right', color: '#2c7287' }}
+           >
+             <Typography content={handlePrice(data, i) as string} modifiers={['13x18', '600', 'right']} />
+           </div>
+         ),
+       });
+     }
+  }
   setColumns(newColumns);
 };
  const generateColumnsMonth = (dataM:any) => {
@@ -949,7 +984,7 @@ const handlePrice = (data: any, i: any) => {
           tabLeft={
             <div className="p-appointment_view_filter">
                <Icon iconName="report_crm-yellow" size="24x24" />
-              <Typography content="Báo cáo kế hoạch kinh doanh Doctor Check" modifiers={['16x24', '600', 'center', 'blueNavy']} />
+              <Typography content={mode == "date" ? "Báo cáo kế hoạch kinh doanh Doctor Check ngày " + dayjs(dataFilter.date ).format('DD-MM-YYYY') : "Báo cáo kế hoạch kinh doanh Doctor Check tháng " + dataFilter.month + "-" + dataFilter.year } modifiers={['16x24', '600', 'center', 'blueNavy']} />
               
             </div>
           }
@@ -1046,12 +1081,14 @@ const handlePrice = (data: any, i: any) => {
         />
          <div className='p-business_body'>
          
-            <div className='p-business_body_content' style={{width:"calc(100vw - 10px)", height:"calc(100vh - 150px)"}}>
-           {dataReportDate?.length === undefined ? <CEmpty description="Không có dữ liệu ...!" /> : TableMemory}
+            <div className='p-business_body_content' style={{width:"calc(60vw)", height:"calc(100vh - 150px)"}}>
+           {dataReportDate?.length === undefined ? <CEmpty description="Không có dữ liệuss ...!" /> : TableMemory}
             </div>
+            
         </div>
         </div>
       </PublicLayout>
+      
     <CModal
         isOpen={isOpenGrowth}
         textOK="Tiếp tục"
