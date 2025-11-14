@@ -11,7 +11,10 @@ interface ExcelData {
 
 export const SOCKET_URL =
   "wss://sockets.doctorcheck.online:3333/send?app_key=cs";
-
+export const SOCKET_URL_FB =
+  "wss://sockets.doctorcheck.online:3333/send?app_key=dc-statistic";
+  export const SOCKET_URL_MN =
+  "wss://sockets.doctorcheck.online:3333/send?app_key=dc-monitor-service";
 export const LOCAL_STORAGE = {
   LANGUAGE: "NVS_Language",
   ACCESS_TOKEN: "NVS_AccessToken",

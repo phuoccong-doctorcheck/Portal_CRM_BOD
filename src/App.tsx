@@ -57,6 +57,9 @@ import Manage_Task from 'pages/Manage_Task';
 import ChartSalers from 'pages/ChartSalers';
 import ManageKPIs from 'pages/Manage_KPIs';
 import CashFlow from 'pages/CashFlow';
+import FbAds from 'pages/FbAds';
+import MonitorBackup from 'pages/MonitorBackup';
+import AimDashboardPage from 'pages/AimDashboardPage';
 
 const routes = [
   {
@@ -79,10 +82,10 @@ const routes = [
     path: '/sso-crm',
     element: <LoginWithLink />, // login
   },
-  // {
-  //   path: '/',
-  //   element: <Dashboard />, // trang chủ
-  // },
+{
+     path: '/monitoring',
+     element: <Dashboard />, // trang chủ
+   },
   // {
   //   path: '/growth',
   //   element: <ReportGrowthClinic />, // trươc khám
@@ -194,6 +197,19 @@ const routes = [
    {
     path: '/cash-flow',
     element: <CashFlow />, // trang lỗi
+  },
+
+   {
+    path: '/report-fb-ads',
+    element: <FbAds />, // trang lỗi
+  },
+   {
+    path: '/monitor-backup',
+    element: <MonitorBackup />, // trang lỗi
+  },
+    {
+    path: '/leadreport',
+    element: <AimDashboardPage />, // trang lỗi
   },
   //  {
   //   path: '/chart',

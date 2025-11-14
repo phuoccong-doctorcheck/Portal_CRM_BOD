@@ -17,6 +17,21 @@ export const getReportMonth = async (data: any) => {
   const response = await axiosInstance.post("/cashes/get-cashes-by-month",data);
   return response.data;
 };
+export const updateEvaluation = async (data: any) => {
+ 
+  const response = await axiosInstance.post("/facebook-ads/update-evaluation-criteria",data);
+  return response.data;
+};
+export const AddEvaluation = async (data: any) => {
+ 
+  const response = await axiosInstance.post("/facebook-ads/add-evaluation-criteria",data);
+  return response.data;
+};
+export const getIDADS = async () => {
+ 
+  const response = await axiosInstance.get("/category/all");
+  return response.data;
+};
 export const exportExcelReportDate = async (data: any) => {
   const response = await axiosInstance.post("/cashes/exportxls-cashes-by-date", data);
   const byteCharacters = atob(response.data.data);
@@ -30,7 +45,7 @@ export const exportExcelReportDate = async (data: any) => {
     // Tạo link tải và tự động bấm vào link
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    const filename = `${data.date || 'export'}.xlsx`;
+    const filename = `CashReport_${data.date || 'export'}.xlsx`;
   link.download = filename;
     link.click();
 
@@ -51,7 +66,7 @@ export const exportExcelReportMonth = async (data: any) => {
     // Tạo link tải và tự động bấm vào link
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    const filename =  `${data.month}-${data.year || 'export'}.xlsx`;
+    const filename =  `CashReport_${data.month}-${data.year || 'export'}.xlsx`;
   link.download = filename;
     link.click();
 

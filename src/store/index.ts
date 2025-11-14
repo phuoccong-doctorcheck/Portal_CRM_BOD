@@ -19,13 +19,16 @@ import dashboardReducer from "./dashboard";
 import exampleReducer from "./example";
 import homeReducer from "./home";
 import KPIDayViewReducer from "./kpi_taskview"
+import leadReportReducer from "./leadReport";
 import messageReducer from "./message";
 import misscallReducer from "./misscall";
+import MBackupReducer from "./monitor_backup"
+import  listMonitoringReducer  from "./monitoring";
 import pancakeReducer from "./pancake/index";
 import pointReducer from "./point";
+import ReportADSReducer from "./report_fb_ads";
 import ReportPlanReducer from "./report_plan_bussiness"
 import statisticReducer from "./statistics";
-
 // Initialize config for Redux Persist
 const persistConfig = {
   key: "root",
@@ -50,7 +53,10 @@ const rootReducer = combineReducers({
   point: pointReducer,
   kpiday: KPIDayViewReducer,
   ReportPlan: ReportPlanReducer,
-
+  ReportFBADS: ReportADSReducer,
+  Monitoring: listMonitoringReducer,
+  MonitoringBackup: MBackupReducer,
+  leadReport: leadReportReducer,
 });
 
 // Apply Redux Persist to the root reducer

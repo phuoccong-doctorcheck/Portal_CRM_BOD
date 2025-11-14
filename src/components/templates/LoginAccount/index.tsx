@@ -12,6 +12,7 @@ import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { loginWithAccount } from 'services/api/Login';
+import { getIDADS } from 'services/api/report_plan';
 import { InfoUserType } from 'services/types';
 import { getMyTask } from 'store/customerInfo';
 import { isLoading, isLogined } from 'store/example';
@@ -63,6 +64,121 @@ const LoginAccount: React.FC<FormLoginProps> = () => {
             user_country_phone_prefix: user_country_phone_prefix,
             avatar: null
           }), { expires: new Date(new Date().getTime() + (20 * 60 * 60 * 1000)) }); // thời gian hết hạn là 20 giờ
+          getIDADS().then((data) => {
+const transformedData = data.data.dm_ads_accounts.map((item:any) => ({
+  ...item,
+  value: item.ads_account_id,
+  label: item.ads_account_id,
+}));
+
+// Thêm object "all" vào đầu mảng
+const finalData = [
+  //  {
+  //    ads_account_id: "all",
+  //    ads_account_name: null,
+  //    ads_account_type: "fb",
+  //    value: "all",
+  //    label: "Tất cả"
+  //  },
+  ...transformedData
+];
+
+            localStorage.setItem('adsAccounts', JSON.stringify(finalData));
+            const transformedDataC = data.data.dm_evaluation_criterias.map((item:any) => ({
+  ...item,
+  value: item.criteria_id,
+  label: item.criteria_name,
+}));
+
+// Thêm object "all" vào đầu mảng
+const finalDataC = [
+ 
+  ...transformedDataC
+];
+
+            localStorage.setItem('adsCri', JSON.stringify(finalDataC));
+            //
+            const transformedDataMonitorSN = data.data.dm_system_backup_type.map((item:any) => ({
+  ...item,
+  value:  item.system_name + item.backup_type,
+  label: item.system_name + "(" + (item.backup_type) + ")",
+}));
+
+// Thêm object "all" vào đầu mảng
+const finalDataSN = [
+  //  {
+  //    ads_account_id: "all",
+  //    ads_account_name: null,
+  //    ads_account_type: "fb",
+  //    value: "all",
+  //    label: "Tất cả"
+  //  },
+  ...transformedDataMonitorSN
+];
+
+            localStorage.setItem('dataMNSN', JSON.stringify(finalDataSN));
+              //
+            const transformedDataMonitorST = data.data.dm_monitor_service_type.map((item:any) => ({
+              ...item,
+              value:  item.name,
+              label: item.name,
+              is_show: item.is_show
+            }));
+
+// Thêm object "all" vào đầu mảng
+const finalDataST = [
+  //  {
+  //    ads_account_id: "all",
+  //    ads_account_name: null,
+  //    ads_account_type: "fb",
+  //    value: "all",
+  //    label: "Tất cả"
+  //  },
+  ...transformedDataMonitorST
+];
+
+            localStorage.setItem('dataMNST', JSON.stringify(finalDataST));
+            //
+            const transformedDataMonitorC = data.data.dm_status_code.map((item:any) => ({
+              ...item,
+              value:  item.code,
+              label: item.code,
+            }));
+
+// Thêm object "all" vào đầu mảng
+const finalDataMC = [
+  //  {
+  //    ads_account_id: "all",
+  //    ads_account_name: null,
+  //    ads_account_type: "fb",
+  //    value: "all",
+  //    label: "Tất cả"
+  //  },
+  ...transformedDataMonitorC
+];
+
+            localStorage.setItem('dataMNC', JSON.stringify(finalDataMC));
+              const transformedDataMonitorBT = data.data.dm_system_backup_type.map((item:any) => ({
+  ...item,
+  value: item.system_name + item.backup_type,
+  label: item.backup_type + "(" + item.system_name + ")",
+}));
+
+// Thêm object "all" vào đầu mảng
+const finalDataBT = [
+  //  {
+  //    ads_account_id: "all",
+  //    ads_account_name: null,
+  //    ads_account_type: "fb",
+  //    value: "all",
+  //    label: "Tất cả"
+  //  },
+  ...transformedDataMonitorBT
+];
+
+            localStorage.setItem('dataMNBT', JSON.stringify(finalDataBT));
+          });
+          
           const newRole: any[] = [
             ...roles,
             ["quocthinh.le"].includes(username) ? {
@@ -118,21 +234,27 @@ const LoginAccount: React.FC<FormLoginProps> = () => {
           dispatch(setRoleUser(newRole));
           dispatch(setInforUser(prevData as InfoUserType));
           const roles1 = Cookies.get('roles');
-
+          console.log(shortname)
           // Kiểm tra nếu chuỗi không phải là `undefined` hoặc `null`, thì parse nó thành mảng
           const rolesArray = roles1 ? JSON.parse(roles1) : [];
           console.log(rolesArray[0]?.role_name)
-          if (rolesArray[0]?.role_name === "businessplan")
-          {
-               navigator('/bussiness-plan');
-          }
-          else if (rolesArray[0]?.role_name === "cashflow")
-          {
-            navigator('/cash-flow');
+        // if (rolesArray[0]?.role_name === "businessplan")
+          // {
+          //      navigator('/bussiness-plan');
+          // }
+          // else if (rolesArray[0]?.role_name === "cashflow")
+          // {
+          //   navigator('/cash-flow');
+          // }
+          // else {
+          if (shortname === "Admin") {
+             navigator('/monitor-backup');
           }
           else {
-            navigator('/not');
+            navigator('/report-fb-ads');
           }
+           
+          // }
           resolve(true);
         } catch (err) {
           console.log("🚀 ~ file: index.tsx:96 ~ onSuccess: ~ err:", err)

@@ -38,7 +38,7 @@ import { getReportFacebookByDate, updateReport } from "services/api/statistics";
 import { getListToStoreBeforeExams } from "store/beforeExams";
 import { useAppDispatch, useAppSelector } from 'store/hooks';
 import mapModifiers, { copyClipboard, previewBlobPDFOpenLink } from 'utils/functions';
-import { MenuCRM } from 'utils/staticState';
+import { MenuCRM, MenuCRMA } from 'utils/staticState';
 
 import logoActive from 'assets/images/short_logo.svg';
 
@@ -198,6 +198,7 @@ const rolesArray = roles ? JSON.parse(roles) : [];
       setName(Cookies.get('shortname') || '');
     }
   }, [username, getshortname]);
+  console.log(getshortname)
   // Đây là hàm call API search khách hàng
   const { mutate: getSearchByKey } = useMutation(
     'post-footer-form',
@@ -857,7 +858,65 @@ const rolesArray = roles ? JSON.parse(roles) : [];
               isLoading={isLoading}
             />
           </div> */}
-          <div className={mapModifiers("t-header_wrapper_nav_right", isSortHeader && 'short')} style={{marginLeft:"100px"}}>
+          {
+            getshortname === "Admin" ?<div className={mapModifiers("t-header_wrapper_nav_right", isSortHeader && 'short')} style={{marginLeft:"100px"}}>
+            {
+              MenuCRMA?.map((group:any) => (
+                <>
+                  {
+                    group?.items?.map((item:any) => {
+                      if (checkRoles(item.role))
+                      {
+                        var IconComponent = item.icon; 
+                        return (
+                           <div key={item.id} className="t-header_wrapper_nav_right_insurance" style={{marginRight:"40px"}} onClick={() => {
+                         setIndexActive(item.id)
+                                sessionStorage.setItem('indexMenu', `${item?.id}`)
+                                navigators(item.slug)
+                    
+            }}>
+
+                       {item.icon && React.createElement(item.icon, { style: { color: '#0489dc', fontSize: '24px' } })}
+
+
+              {Number(currentWidth) > 900 &&
+             <div style={{display:"flex",alignItems:"center", marginTop:"0px", marginLeft:"5px"}}>   <Typography content={item.name} /></div>
+              }
+            </div>  
+                        )
+                    }
+
+                     })
+                  }
+                </>
+                   ))
+            }
+             
+        
+            {/* Map các button về User: Trang cá nhân, kết nối FB, Đăng xuất */}
+            {
+              listRoles?.some((role: any) => role?.role_name === 'robot')
+                ? <div style={{ display: 'flex', justifyContent: 'center' }} />
+                :
+                // <div className="t-header_wrapper_nav_right_task"
+                //   onClick={() => {
+                //     sessionStorage.setItem('indexMenu', `0`)
+                //     navigator('/account/task')
+                //   }}
+                // >
+                //   <Icon iconName="check-list" />
+                //   {isSortHeader ? null :
+                //     <Typography content=" Công việc" />
+                //   }
+                //   <span>{myTask.data ? myTask?.total_items : stateMyTask?.total_items}</span>
+              // </div>
+                <></>
+            }
+            {/* Hiển thị tên nhân viên , nếu là thanh header ngắn thì lấy shortname thôi, còn dài là lấy name */}
+            <div style={{visibility:"hidden"}}> <UserDropdown optionsChild={OptionUser} name={name} iconLogo={logoActive} /></div> 
+            {/* ===> Responsive chiều ngang càng nhỏ thì các button sẽ biến mất theo thứ tự đã code ở trên */}
+            </div> :
+              <div className={mapModifiers("t-header_wrapper_nav_right", isSortHeader && 'short')} style={{marginLeft:"100px"}}>
             {
               MenuCRM?.map((group) => (
                 <>
@@ -914,6 +973,8 @@ const rolesArray = roles ? JSON.parse(roles) : [];
             <div style={{visibility:"hidden"}}> <UserDropdown optionsChild={OptionUser} name={name} iconLogo={logoActive} /></div> 
             {/* ===> Responsive chiều ngang càng nhỏ thì các button sẽ biến mất theo thứ tự đã code ở trên */}
           </div>
+          }
+          
         </div>
       </div>
       {/* Đây là layout hiện lên danh sách search */}

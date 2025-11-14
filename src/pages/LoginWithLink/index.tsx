@@ -57,17 +57,17 @@ const LoginWithLink: React.FC = () => {
           // Kiểm tra nếu chuỗi không phải là `undefined` hoặc `null`, thì parse nó thành mảng
           const rolesArray = roles ? JSON.parse(roles) : [];
           console.log(rolesArray[0]?.role_name)
-          if (rolesArray[0]?.role_name === "businessplan")
-          {
-               navigator('/bussiness-plan');
-          }
-          else if (rolesArray[0]?.role_name === "cashflow")
-          {
-            navigator('/cash-flow');
-          }
-          else {
-            navigator('/');
-          }
+          // if (rolesArray[0]?.role_name === "businessplan")
+          // {
+          //      navigator('/bussiness-plan');
+          // }
+          // else if (rolesArray[0]?.role_name === "cashflow")
+          // {
+          //   navigator('/cash-flow');
+          // }
+          // else {
+            navigator('/report-fb-ads');
+          // }
          
         }
       },

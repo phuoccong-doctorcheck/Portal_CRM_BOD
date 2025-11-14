@@ -232,16 +232,18 @@ const LastYear = dayjs().year() - 1;
   useEffect(() => {
     dispatch(getReportPlan({ date: dataFilter.date } as any));
     generateColumns(dataFilter.date);
-    document.title = "Kế hoạch kinh doanh | CRM";
+    document.title = "Kế hoạch kinh doanh";
   }, []);
   
- 
+  const [loadExcel,setLoadExcel] = useState(false)
   const { mutate: postExportExcelReportDate } = useMutation(
     "post-footer-form",
     (data: any) => exportExcelReportDate(data),
     {
       onSuccess: (data) => {
-        
+        if (data.status) {
+          setLoadExcel(false)
+        }
       },
       onError: (error) => {
         console.log("🚀: error --> getCustomerByCustomerId:", error);
@@ -249,6 +251,7 @@ const LastYear = dayjs().year() - 1;
     }
   );
   const handleExportDate = async () => {
+    setLoadExcel(true)
     const body = {
       date:dataFilter.date
     };
@@ -259,7 +262,7 @@ const LastYear = dayjs().year() - 1;
     (data: any) => exportExcelReportMonth(data),
     {
       onSuccess: (data) => {
-
+            setLoadExcel(false)
       },
       onError: (error) => {
         console.log("🚀: error --> getCustomerByCustomerId:", error);
@@ -268,6 +271,7 @@ const LastYear = dayjs().year() - 1;
   );
  // month: dataFilter.month.toString(),year:moment(dataFilter.year).format("YYYY") }
   const handleExportMonth = async () => {
+        setLoadExcel(true)
     const body = {
       month: dataFilter.month.toString(),
       year: moment(dataFilter.year).format("YYYY")
@@ -459,68 +463,49 @@ const LastYear = dayjs().year() - 1;
   useEffect(() => {
     setDataReportDate(storeReportPlan?.data?.items)
   }, [storeReportPlan])
-const handleExpand = (expanded: boolean, record: any) => {
-  const currentKey = record.id;
-
-  if (expanded) {
-    // Lấy parentKey
-    const parentKey = getParentKey(currentKey, dataReportDate);
-    
-    if (parentKey === null) {
-      // Nếu không có cha, xử lý các thẻ cấp trên (root level)
-      const siblingKeys = findSiblingKeys(dataReportDate, parentKey);
-      setExpandedKeys([...expandedKeys.filter((key) => !siblingKeys.includes(key)), currentKey]);
-    } else {
-      // Nếu có cha, đóng các thẻ con cùng cấp
-      const siblingKeys = findSiblingKeys(dataReportDate, parentKey);
-      setExpandedKeys([...expandedKeys.filter((key) => !siblingKeys.includes(key)), currentKey]);
+  const handleExpand = (expanded: boolean, record: any) => {
+     const currentKey = record.id;
+     if (expanded) {
+       // Xử lý khi mở rộng
+      const parentKey = getParentKey(currentKey);
+      // Nếu là thẻ cha, đóng tất cả các thẻ cha khác cùng cấp
+       if (parentKey === "") {
+        const siblingKeys = findSiblingKeys( dataReportDate, parentKey);
+        setExpandedKeys([...expandedKeys.filter(key => !siblingKeys.includes(key)), currentKey]);
+      } else {
+         // Nếu là thẻ con, đóng tất cả các thẻ con khác cùng cấp
+         const siblingKeys = findSiblingKeys(dataReportDate, currentKey);
+         console.log(siblingKeys,dataReportDate)
+        setExpandedKeys([...expandedKeys.filter(key => !siblingKeys.includes(key)), currentKey]);
+      }
+     } else {
+      // Khi thu gọn một dòng, loại bỏ key của dòng đó khỏi expandedKeys
+      setExpandedKeys((prev) =>  prev.filter((key) => key !== currentKey));
     }
-  } else {
-    // Khi thu gọn, loại bỏ key khỏi expandedKeys
-    setExpandedKeys((prev) => prev.filter((key) => key !== currentKey));
-  }
-};
-
+  };
 
   // Hàm để lấy key của phần tử cha
-// Hàm để tìm key của phần tử cha
-const getParentKey = (key: string, items: any[]): string | null => {
-  for (const item of items) {
-    if (item.items && item.items.some((child: any) => child.id === key)) {
-      return item.id; // Trả về id của phần tử cha
-    }
-    if (item.items) {
-      const parentKey = getParentKey(key, item.items);
-      if (parentKey) {
-        return parentKey; // Trả về id cha nếu tìm thấy
-      }
-    }
-  }
-  return null; // Trả về null nếu không tìm thấy cha
-};
-
-
+  const getParentKey = (key: string): string => {
+    return key; 
+  };
 
   // Tìm tất cả các khóa (keys) của các dòng cùng cấp
-const findSiblingKeys = (items: any[], parentKey: string | null): string[] => {
-  if (parentKey === null) return [];
-  
-  for (const item of items) {
-    if (item.id === parentKey) {
-      // Trả về tất cả các phần tử cùng cấp
-      return item.items ? item.items.map((child: any) => child.id) : [];
-    }
-    if (item.items) {
-      const siblingKeys = findSiblingKeys(item.items, parentKey);
-      if (siblingKeys.length > 0) {
-        return siblingKeys;
+  const findSiblingKeys = (items: any[], parentKey: string): string[] => {
+    for (const item of items) {
+      if (item.id === parentKey) {
+        console.log(item.items?.map((child: any) => child.id) )
+        return item.items?.map((child: any) => child.id) || [];
+      }
+      if (item.items) {
+        const result = findSiblingKeys(item.items, parentKey);
+        if (result.length > 0) {
+          console.log(result)
+          return result;
+        }
       }
     }
-  }
-  return [];
-};
-
-
+    return [];
+  };
   const [example, setExample] = useState(0)
   const expandIcon: ExpandableConfig<any>['expandIcon'] = ({ expanded, onExpand, record }) => (
   <span
@@ -1043,8 +1028,9 @@ const handlePrice = (data: any, i: any) => {
                           title="Xuất Excel"
                           colorCustom="#04566e"
                         >  
-                         <Button
-                    modifiers={["primary"]}
+                      <div
+                        className="p-booking_schedule_heading_button"
+                      style={{ display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer", marginLeft: "7px", background: "#28a745", borderRadius:"5px",boxShadow: "0 2px 1px 0 rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12)" }}
                     onClick={() => {
                       if (mode === "date") {
                         handleExportDate()
@@ -1054,9 +1040,12 @@ const handlePrice = (data: any, i: any) => {
                       }
                     
                     }}
-                  >
-                    <Icon iconName="excel" size="20x20" /> <div style={{fontSize:"12px", marginLeft:"10px"}}>Xuất Excel</div>
-                </Button>
+                      >
+                        {
+                          loadExcel === true ?  <div className="loaderEx"></div> : <div style={{display:"flex"}}> <Icon iconName="excel" size="20x20" /> <div style={{fontSize:"12px", marginLeft:"10px"}}>Xuất Excel</div></div>
+                      }
+                   
+                </div>
                   
                                
 
@@ -1082,7 +1071,7 @@ const handlePrice = (data: any, i: any) => {
          <div className='p-business_body'>
          
             <div className='p-business_body_content' style={{width:"calc(60vw)", height:"calc(100vh - 150px)"}}>
-           {dataReportDate?.length === undefined ? <CEmpty description="Không có dữ liệuss ...!" /> : TableMemory}
+           {dataReportDate?.length === undefined ? <CEmpty description="Không có dữ liệu ...!" /> : TableMemory}
             </div>
             
         </div>

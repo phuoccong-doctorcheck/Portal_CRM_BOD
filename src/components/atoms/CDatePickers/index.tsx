@@ -101,7 +101,7 @@ const CDatePickers: React.FC<CDatePickersProps> = ({
         }}
         {...props}
       />
-      <p className="a-date_picker-error_title">{error}</p>
+   
     </div>
   );
 };

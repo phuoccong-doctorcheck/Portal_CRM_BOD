@@ -1,4 +1,4 @@
-import { BarChartOutlined, DollarOutlined } from '@ant-design/icons';
+import { FacebookOutlined,MonitorOutlined } from '@ant-design/icons';
 import { DropdownData } from "components/atoms/Dropdown";
 
 
@@ -8,23 +8,69 @@ export const MenuCRM = [
     groupName: "Quy trình",
     items: [
       {
-        id: 2,
-        name: "Kế hoạch Kinh Doanh",
-        icon:  BarChartOutlined,
-        slug: "/bussiness-plan",
-        role: ["businessplan", "cashflow"],
+        id: 1,
+        name: "Báo cáo FB ADS",
+        icon:  FacebookOutlined ,
+        slug: "/report-fb-ads",
+        role: ["cashflow", "businessplan","fbreport"],
         child: [],
         isHaveChild: false,
       },
+      // {
+      //   id: 2,
+      //   name: "Kế hoạch Kinh Doanh",
+      //   icon:  BarChartOutlined,
+      //   slug: "/bussiness-plan",
+      //   role: ["businessplan", "cashflow","fbreport"],
+      //   child: [],
+      //   isHaveChild: false,
+      // },
+      // {
+      //   id: 3,
+      //   name: "Dòng tiền",
+      //   icon:  DollarOutlined ,
+      //   slug: "/cash-flow",
+      //   role: ["cashflow", "businessplan","fbreport"],
+      //   child: [],
+      //   isHaveChild: false,
+      // },
+     
+    ],
+  },
+ 
+];
+export const MenuCRMA = [
+  {
+    groupId: "1",
+    groupName: "Quy trình",
+    items: [
       {
-        id: 3,
-        name: "Dòng tiền",
-        icon:  DollarOutlined ,
-        slug: "/cash-flow",
-        role: ["cashflow", "businessplan"],
+        id: 1,
+        name: "Monitor Backup",
+        icon:  MonitorOutlined ,
+        slug: "/monitor-backup",
+        role: ["cashflow", "businessplan","fbreport"],
         child: [],
         isHaveChild: false,
       },
+      // {
+      //   id: 2,
+      //   name: "Kế hoạch Kinh Doanh",
+      //   icon:  BarChartOutlined,
+      //   slug: "/bussiness-plan",
+      //   role: ["businessplan", "cashflow","fbreport"],
+      //   child: [],
+      //   isHaveChild: false,
+      // },
+      // {
+      //   id: 3,
+      //   name: "Dòng tiền",
+      //   icon:  DollarOutlined ,
+      //   slug: "/cash-flow",
+      //   role: ["cashflow", "businessplan","fbreport"],
+      //   child: [],
+      //   isHaveChild: false,
+      // },
      
     ],
   },

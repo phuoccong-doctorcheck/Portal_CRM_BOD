@@ -335,18 +335,18 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({
 
           // Kiểm tra nếu chuỗi không phải là `undefined` hoặc `null`, thì parse nó thành mảng
           const rolesArray = roles1 ? JSON.parse(roles1) : [];
-          console.log(rolesArray[0]?.role_name)
-          if (rolesArray[0]?.role_name === "businessplan")
-          {
-               navigators('/bussiness-plan');
-          }
-          else if (rolesArray[0]?.role_name === "cashflow")
-          {
-            navigators('/cash-flow');
-          }
-          else {
-           navigators('/not');
-          }
+          // console.log(rolesArray)
+          // if (rolesArray[0]?.role_name === "businessplan")
+          // {
+          //      navigators('/bussiness-plan');
+          // }
+          // else if (rolesArray[0]?.role_name === "cashflow")
+          // {
+          //   navigators('/cash-flow');
+          // }
+          // else {
+           navigators('/report-fb-ads');
+          // }
                     sessionStorage.setItem('indexMenu', `2`)
                   } else {
                     setCollapsedSider(!collapsedSider)
