@@ -458,7 +458,7 @@ const thSticky = {
   left: 0,
   zIndex: 3,                 // cao hơn body
   background: "#fff",        // bắt buộc để che phần scroll
-  borderRight: `2px solid ${BORDER_MAIN}`,
+  borderRight: `2px solid rgb(243 243 243)`,
   // fix blur iOS:
   transform: "translateZ(0)",
   willChange: "transform",
@@ -499,7 +499,23 @@ const thSticky = {
   transform: "translateZ(0)",
   backgroundClip: "padding-box" as const,
 }
-
+   const metricCell3 = {
+  ...tdBase,
+  textAlign: "left" as const,
+  minWidth: 167,
+  width: 167,
+  maxWidth: 170,
+  position: "sticky" as const,
+  left: 0,
+  zIndex: 2,       
+  marginRight:2,                // thấp hơn header một chút
+   // không bị “đè” khi scroll
+  background: "#fff",              // bắt buộc để che phần scroll
+  borderRight: `2px solid ${BORDER_MAIN}`,
+  // fix iOS:
+  transform: "translateZ(0)",
+  backgroundClip: "padding-box" as const,
+}
   const weekCell = {
     ...tdBase,
     fontWeight: 600,
@@ -606,7 +622,7 @@ const thSticky = {
                 key={r.SequenceRow}
                 style={{ background: idx % 2 ? "#e8e8e8" : "#FFFFFF" }}
               >
-                <td style={metricCell2}>{r.ReportRow}</td>
+                <td style={metricCell3}>{r.ReportRow}</td>
 
                 {/* SUMMARY */}
                 {summaryColSeqs.map((seq) => {
@@ -941,7 +957,7 @@ function BarrierTableV3({ table, title }: { table: TableBlock; title: string }) 
         borderRadius: 4,
         boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
         border: `2px solid ${BORDER_MAIN}`,
-         maxWidth: "81%",
+         maxWidth: "82%",
       }}
     >
       <div style={{ overflowX: "auto" }}>
@@ -954,7 +970,7 @@ function BarrierTableV3({ table, title }: { table: TableBlock; title: string }) 
         >
           <thead>
             <tr>
-              <th style={{ ...th, width: 180, textAlign: "left", color:"#c40608" }}>{title}</th>
+              <th style={{ ...th, width: 200, textAlign: "left", color:"#c40608" }}>{title}</th>
               {columns.map((c) => (
                 <th key={c} style={th}>
                   {c}

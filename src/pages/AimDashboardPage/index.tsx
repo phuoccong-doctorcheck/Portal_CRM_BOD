@@ -740,7 +740,21 @@ const statisticContent = useMemo(
                     {/* Nếu chưa chọn filter thì vẫn hiển thị Empty như bạn đang làm */}
                  
                
-                      {statisticContent}
+                     {
+                                  data?.data?.Tables?.length === 0 ? (
+                                        <div style={{ marginTop: 50 }}>
+                     <Empty
+                        image="https://gw.alipayobjects.com/zos/antfincdn/ZHrcdLPrvN/empty.svg"
+                        style={{ height: "400px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
+                        description={
+                          <span style={{ color: "red", fontSize: "20px" }}>
+                                                Chưa có dữ liệu
+                                              </span>
+                                            }
+                                          />
+                                        </div>
+                                      ) :   statisticContent
+                                        }
                  
                   </>
         </div>

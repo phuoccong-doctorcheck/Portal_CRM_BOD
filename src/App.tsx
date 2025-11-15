@@ -209,7 +209,7 @@ const routes = [
     element: <MonitorBackup />, // trang lỗi
   },
     {
-    path: '/leadreport',
+    path: '/leadreport/desktop',
     element: <AimDashboardPage />, // trang lỗi
   },
    {

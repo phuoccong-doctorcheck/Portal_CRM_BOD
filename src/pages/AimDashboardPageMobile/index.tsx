@@ -174,7 +174,7 @@ const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
   month:  undefined as unknown as DropdownData,
   year:  "2025",
 });
-  console.log(data.data)
+  console.log(data?.data?.Tables?.length)
  
     const [tableLoading, setTableLoading] = useState(false);
 
@@ -531,7 +531,7 @@ const statisticContent = useMemo(
         justifyContent: "start",
         overflowY: "auto",
         overflowX: "hidden",
-        paddingBottom: 40,
+        paddingBottom: 80,
       }}
     >
       <DashboardPageMobile dataRaw={data} handleSeenDay={handleSeenDay} dataFilter={ filterData} />
@@ -669,8 +669,22 @@ const statisticContent = useMemo(
     </div>
                     {/* Nếu chưa chọn filter thì vẫn hiển thị Empty như bạn đang làm */}
                  
-               
-                      {statisticContent}
+            {
+              data?.data?.Tables?.length === 0 ? (
+                    <div style={{ marginTop: 50 }}>
+ <Empty
+    image="https://gw.alipayobjects.com/zos/antfincdn/ZHrcdLPrvN/empty.svg"
+    style={{ height: "400px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
+    description={
+      <span style={{ color: "red", fontSize: "20px" }}>
+                            Chưa có dữ liệu
+                          </span>
+                        }
+                      />
+                    </div>
+                  ) :   statisticContent
+                    }
+                    
                  
                   </>
         </div>
