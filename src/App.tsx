@@ -60,6 +60,7 @@ import CashFlow from 'pages/CashFlow';
 import FbAds from 'pages/FbAds';
 import MonitorBackup from 'pages/MonitorBackup';
 import AimDashboardPage from 'pages/AimDashboardPage';
+import AddAimDashboardPageMobile from 'pages/AimDashboardPageMobile';
 
 const routes = [
   {
@@ -210,6 +211,10 @@ const routes = [
     {
     path: '/leadreport',
     element: <AimDashboardPage />, // trang lỗi
+  },
+   {
+    path: '/leadreport/mobile',
+    element: <AddAimDashboardPageMobile />, // trang lỗi
   },
   //  {
   //   path: '/chart',

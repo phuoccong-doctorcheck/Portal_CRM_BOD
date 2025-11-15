@@ -41,7 +41,7 @@ import { useAppDispatch, useAppSelector } from "store/hooks";
 import { getListLeadReport, getListLeadReportDay } from 'store/leadReport';
 import mapModifiers, { downloadBlobPDF, downloadBlobPDFOpenLink, previewBlobPDFOpenLink } from "utils/functions";
 
-import DashboardTables from './DashboardTables';
+import DashboardPageMobile from './DashboardPageMobile';
 
 import logoS from 'assets/images/logoS.png';
 import logo from 'assets/images/short_logo.svg';
@@ -101,7 +101,7 @@ interface TableSection {
 }
 const REPORT_URL =
   "https://app.powerbi.com/view?r=eyJrIjoiNjUxYjg2YjUtODk1YS00MmMyLWI2MjgtN2Q3MTAwOGNlMDQ5IiwidCI6ImRiNzNmYWY2LTViYzMtNDkwZC1iMGQ4LTZlZWE1ZTU4YTQ0NiIsImMiOjEwfQ%3D%3D&pageName=e7454753d5ac9ac6daa9";
-const AddAimDashboardPage: React.FC = () => {
+const AddAimDashboardPageMobile: React.FC = () => {
   const dispatch = useAppDispatch();
   const today = new Date();
   const todayStr = today.toLocaleDateString("vi-VN"); // 14/11/2025
@@ -524,15 +524,17 @@ const statisticContent = useMemo(
     <div
       style={{
         backgroundColor: "transparent",
-        padding: "0px 0px",
+        padding: "0px 5px",
         maxHeight: "83vh",
         display: "flex",
         flexDirection: "column",
         justifyContent: "start",
         overflowY: "auto",
+        overflowX: "hidden",
+        paddingBottom: 40,
       }}
     >
-      <DashboardTables dataRaw={data} handleSeenDay={handleSeenDay} dataFilter={ filterData} />
+      <DashboardPageMobile dataRaw={data} handleSeenDay={handleSeenDay} dataFilter={ filterData} />
     </div>
   ),
   [data]
@@ -541,7 +543,7 @@ const statisticContent = useMemo(
 
 
   return (
-   <div className="p-apointment_list" style={{justifyContent:"center", paddingTop:10}}>
+   <div style={{ paddingTop:10}}>
     
       <Spin
         spinning={loadingPage}
@@ -554,94 +556,36 @@ const statisticContent = useMemo(
           />
         }
       >
-        <div className="p-apointment_list_schedule">
+        <div >
           {/* Header filter của bạn vẫn giữ nguyên để dùng chung cả 2 tab (nếu muốn filter cho cả báo cáo) */}
          
 
           {/* ✅ Tabs chính */}
              <>
-                     {/* <PublicHeader
-            isDial={false}
-            isHideCleanFilter
-            isHideEmergency
-            isHideService
-            isHideLibraly
-            titlePage=""
-            className="p-apointment_list_schedule_header_top_action"
-            handleFilter={() => {}}
-            isHideFilter
-            isClearFilter={storeLeadReportLoading || tableLoading}
-            handleGetTypeSearch={() => {}}
-                      handleCleanFilter={() => { }}
-                      tabLeft={
-                        <>
-                        {
-                           <div style={{ textAlign: "center",fontSize: 15, fontWeight: "bold", textTransform: "uppercase" }}>
-      TỔNG LEADS {filterData.year || "2025"} THEO THÁNG
-        </div>
-                        }
-                        </>
-                        
-                      }
-            listBtn={
-              <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 16 }}>
-                <div style={{ minWidth: "170px", maxWidth: "170px" }}>
-                  <Dropdown
-                    variant="simple"
-                    placeholder="-- Brand --"
-                    dropdownOption={brand}
-                    handleSelect={(item) => {
-                      setFilterData({ ...filterData, brand: item });
-                    }}
-                  />
-                </div>
-                <div style={{ minWidth: "120px", maxWidth: "120px" }}>
-                  <Dropdown
-                    variant="simple"
-                    placeholder="-- Tháng --"
-                    dropdownOption={month}
-                    handleSelect={(item) => {
-                      setFilterData({ ...filterData, month: item });
-                    }}
-                  />
-                </div>
-                <div style={{ minWidth: "100px" }}>
-                  <YearSelector2
-                    onChange={(_, __, year) => {
-                      setFilterData({ ...filterData, year: year.toString() });
-                    }}
-                  />
-                </div>
-                <div style={{ minWidth: "50px" }}>
-                  <Button
-                    style={{ borderRadius: 5, width: "100%" }}
-                    onClick={() => {
-                      handleUpdate();
-                    }}
-                  >
-                    <Typography content="Xem" />
-                  </Button>
-                </div>
-              </div>
-            }
-            /> */}
+                    
              <div style={containerStyle}>
               {/* Header with Logo and Title */}
               <div style={{
                 borderBottom: '3px solid #0d6abf',
-                paddingBottom: '3px',
-                paddingLeft: 10,
-                display: 'flex',
-                gap: '150px',
+                paddingBottom: '10px',
+                
+                display: 'grid',
+                gridTemplateColumns: '1fr 1.6fr',
+                
               }}>
-                <img src={logo} alt="" style={{
+               
+                <div style={{display:"flex", justifyContent:"center", alignItems:"center", }}>
+                    <img src={logo} alt="" style={{
                   width:"60px"
                 }} />
-                 <div style={headerStyle}>
+                 </div>
+              
+                
         
-                <div style={{ display: "flex", justifyContent:"start",alignItems:"center",gap:20}}>        <div style={titleStyle}>Tổng leads {filterData?.year} theo tháng</div>
-      <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 16 }}>
-                <div style={{ minWidth: "250px", maxWidth: "170px" }}>
+                
+                  
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 0, }}>
+                <div style={{maxWidth:"90%",minWidth:"90%"}}>
                   <Dropdown
                     variant="simple"
                       placeholder="-- Brand --"
@@ -664,8 +608,9 @@ const statisticContent = useMemo(
     );
                     }}
                   />
-                </div>
-                <div style={{ minWidth: "120px", maxWidth: "120px" }}>
+                      </div>
+                       <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap:4,maxWidth:"90%", minWidth:"90%"}}>
+                <div style={{ maxWidth: "50%" ,minWidth:"48%"}}>
                   <Dropdown
                     variant="simple"
                       placeholder="-- Tháng --"
@@ -685,7 +630,7 @@ const statisticContent = useMemo(
                     }}
                   />
                 </div>
-                <div style={{ minWidth: "100px" }}>
+                <div style={{ maxWidth: "50%",minWidth:"48%" }}>
                   <YearSelector2
                     onChange={(_, __, year) => {
                         setFilterData({ ...filterData, year: year.toString() });
@@ -700,42 +645,27 @@ const statisticContent = useMemo(
     );
                     }}
                   />
-                </div>
-                {/* <div style={{ minWidth: "50px" }}>
-                  <Button
-                    style={{ borderRadius: 5, width: "100%" }}
-                    onClick={() => {
-                      handleUpdate();
-                    }}
-                  >
-                    <Typography content="Xem" />
-                  </Button>
-                </div> */}
-                  </div></div>
-                <div></div>
-      </div>
+                </div></div>
+                
+                  </div>
+                
+   
               </div>
               
      
-
-      {/* Stats Section */}
-      <div style={statsContainerStyle}>
-        <div style={statItemStyle}>
-          <span style={statLabelStyle}>
+              <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:10, marginTop:5,}}>
+                <div style={{display:"grid", gridTemplateColumns:"1fr 1fr",paddingRight:5,paddingLeft:5,justifyContent:"space-between"}}>
+                  <span style={statLabelStyle}>Tháng <strong>{filterData?.month?.value}/{filterData?.year} ({getDaysInMonth(Number(filterData?.month?.value), Number(filterData?.year))} ngày)</strong></span>
+                   <span style={statLabelStyle2}> <strong>Ngày xem:  {todayStr}</strong></span>
+                </div>
+                <div style={{ display: 'flex',justifyContent:"center",alignItems:"center"}}>
+                   <span style={statLabelStyle3}>
             Hiệu quả đặt hẹn kênh Facebook Ads
           </span>
-        </div>
-        <div style={statItemStyle}>
-                  <span style={statLabelStyle}>Tháng: <strong>{filterData?.month?.value}/{filterData?.year}</strong></span>
-        </div>
-        <div style={statItemStyle}>
-                  <span style={statLabelStyle2}>Số ngày trong tháng: <strong>{getDaysInMonth(Number(filterData?.month?.value), Number(filterData?.year))
- }</strong></span>
-        </div>
-        <div style={statItemStyle}>
-          <span style={statLabelStyle2}>Ngày xem báo cáo: <strong>  {todayStr}</strong></span>
-        </div>
-      </div>
+                </div>
+                    </div>
+      {/* Stats Section */}
+      
     </div>
                     {/* Nếu chưa chọn filter thì vẫn hiển thị Empty như bạn đang làm */}
                  
@@ -749,37 +679,7 @@ const statisticContent = useMemo(
   </div>
   );
 };
-const tableHeaderStyle: React.CSSProperties = {
-  border: "1px solid #ddd",
-  padding: "0px 6px",
-  textAlign: "left",
-  fontWeight: "bold",
-  fontSize: "13px",
-  backgroundColor: "#f0f0f0",
-}
-const tableHeaderStyle2: React.CSSProperties = {
-  border: "1px solid #ddd",
-  padding: "0px 6px",
-  textAlign: "right",
-  fontWeight: "bold",
-  fontSize: "13px",
-  backgroundColor: "#f0f0f0",
-}
 
-const tableCellStyle: React.CSSProperties = {
-  border: "1px solid #ddd",
-  padding: "1px 6px",
-  fontSize: "13px",
-  textAlign: "left",
-  minHeight: "20px",
-}
-const tableCellStyle2: React.CSSProperties = {
-  border: "1px solid #ddd",
-  padding: "1px 6px",
-  fontSize: "13px",
-  textAlign: "right",
-  minHeight: "20px",
-}
  const containerStyle: React.CSSProperties = {
     width: '100%',
     backgroundColor: '#ffffff',
@@ -796,19 +696,7 @@ const tableCellStyle2: React.CSSProperties = {
     
   };
 
-  const logoStyle: React.CSSProperties = {
-    width: '200px',
-    height: '50px',
-    backgroundColor: '#f5a623',
-    borderRadius: '4px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#1e5a96',
-    fontWeight: 'bold',
-    fontSize: '14px',
-    
-  };
+
 
   const titleStyle: React.CSSProperties = {
     fontSize: '22px',
@@ -818,12 +706,7 @@ const tableCellStyle2: React.CSSProperties = {
     flex: 1,
   };
 
-  const filterContainerStyle: React.CSSProperties = {
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  };
+
 
   const selectStyle: React.CSSProperties = {
     padding: '8px 12px',
@@ -841,20 +724,7 @@ const tableCellStyle2: React.CSSProperties = {
     paddingRight: '32px',
   };
 
-  const channelSelectStyle: React.CSSProperties = {
-    ...selectStyle,
-    minWidth: '280px',
-  };
 
-  const monthSelectStyle: React.CSSProperties = {
-    ...selectStyle,
-    minWidth: '70px',
-  };
-
-  const yearSelectStyle: React.CSSProperties = {
-    ...selectStyle,
-    minWidth: '100px',
-  };
 
   const statsContainerStyle: React.CSSProperties = {
     display: 'flex',
@@ -877,6 +747,15 @@ const tableCellStyle2: React.CSSProperties = {
     fontWeight: '700',
     textAnchor: "start",
     fill: "rgb(51, 51, 51)",
+    fontSize: "15px",
+    fontStyle: "normal",
+    
+};
+    const statLabelStyle3: React.CSSProperties = {
+
+    fontWeight: '700',
+    textAnchor: "start",
+    fill: "rgb(51, 51, 51)",
     fontSize: "17px",
     fontStyle: "normal",
     
@@ -884,10 +763,11 @@ const tableCellStyle2: React.CSSProperties = {
   const statLabelStyle2: React.CSSProperties = {
 
     fontWeight: '500',
-    textAnchor: "start",
+    textAnchor: "end",
     fill: "rgb(51, 51, 51)",
-    fontSize: "17px",
+    fontSize: "15px",
     fontStyle: "normal",
+    textAlign:"right"
     
   };
   const statValueStyle: React.CSSProperties = {
@@ -896,4 +776,4 @@ const tableCellStyle2: React.CSSProperties = {
     fontWeight: '600',
   };
 
-export default AddAimDashboardPage;
+export default AddAimDashboardPageMobile;

@@ -33,7 +33,7 @@ const YearSelector2: React.FC<YearSelectorProps> = ({
         display: "flex",
         gap: "16px",
         alignItems: "center",
-        padding: 5,
+        marginTop:4,
         borderRadius: 5,
       }}
     >

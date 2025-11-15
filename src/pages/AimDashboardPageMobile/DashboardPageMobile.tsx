@@ -82,7 +82,7 @@ interface Props {
   dataFilter:any
  }
 /* ===================== Page ===================== */
-export default function DashboardPage({ dataRaw, handleSeenDay, dataFilter }: Props) {
+export default function DashboardPageMobile({ dataRaw, handleSeenDay, dataFilter }: Props) {
     const isMobile = useIsMobile() 
   const table1 = useTable(dataRaw, 1)
   const table2 = useTable(dataRaw, 2)
@@ -138,7 +138,8 @@ export default function DashboardPage({ dataRaw, handleSeenDay, dataFilter }: Pr
         <div style={{
         display: "grid",
        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-        gap: 6, maxWidth: "90%",
+          gap: 6, maxWidth: "100%",
+        width:"98vw"
       }}>
         <div style={{
           display: "flex",
@@ -149,7 +150,7 @@ export default function DashboardPage({ dataRaw, handleSeenDay, dataFilter }: Pr
           {table2 && <BarrierTableV2 table={table2} title="Inbox ấm → Đặt hẹn" />}
           {table4 && <BarrierTableV2 table={table4} title="Đặt hẹn → đến khám" />}
             {table6 && <BarrierTableV2 table={table6} title="Đến khám → Thực hiện dịch vụ" />}
-             {table7 && <BarrierTableV3 table={table7} title="Đang tương tác quá 14 ngày" />}
+            
         </div>
        <div style={{
           display: "flex",
@@ -158,7 +159,7 @@ export default function DashboardPage({ dataRaw, handleSeenDay, dataFilter }: Pr
         }}>
           {table3 && <BarrierTableV2 table={table3} title="Rào cản đặt hẹn thất bại" />}
             {table5 && <BarrierTableV2 table={table5} title="Rào cản đặt hẹn mà không đến" />}
-            
+             {table7 && <BarrierTableV3 table={table7} title="Đang tương tác quá 14 ngày" />}
         </div>
       </div>
       
@@ -437,7 +438,7 @@ function WeeklyTableV2({
     whiteSpace: "nowrap" as const,
     borderBottom: `2px solid ${BORDER_MAIN}`,
     borderLeft: `1px solid #E5E5E5`,
-    fontSize: isMobile ? 11 : 13,
+    fontSize: isMobile ? 12 : 13,
     fontWeight: 600 as const,
   }
 
@@ -447,20 +448,34 @@ function WeeklyTableV2({
     background: "#FFF3E0",
     color: "#E65100",
   }
-
+const thSticky = {
+  ...thBase,
+  textAlign: "left" as const,
+  minWidth: 200,
+  width: 200,
+  maxWidth: 200,
+  position: "sticky" as const,
+  left: 0,
+  zIndex: 3,                 // cao hơn body
+  background: "#fff",        // bắt buộc để che phần scroll
+  borderRight: `2px solid ${BORDER_MAIN}`,
+  // fix blur iOS:
+  transform: "translateZ(0)",
+  willChange: "transform",
+}
   const tdBase = {
     padding: isMobile ? "3px 4px" : "0px 8px",
     textAlign: "right" as const,
     borderLeft: `1px solid #E5E5E5`,
-    fontSize: isMobile ? 11 : 13,
+    fontSize: isMobile ? 12 : 13,
     maxWidth: 120,
-    minWidth: 100,
+    minWidth: 90,
   }
   const tdBase1 = {
     padding: isMobile ? "3px 4px" : "0px 8px",
     textAlign: "right" as const,
     borderLeft: `1px solid #E5E5E5`,
-    fontSize: isMobile ? 11 : 13,
+    fontSize: isMobile ? 12 : 13,
     maxWidth: 80,
     minWidth: 80,
   }
@@ -468,14 +483,22 @@ function WeeklyTableV2({
   const td = tdBase
   const td1 = tdBase1
 
-  const metricCell2 = {
-    ...tdBase,
-    borderRight: `2px solid rgb(17, 141, 255)`,
-    textAlign: "left" as const,
-    ...(isMobile
-      ? {}
-      : { position: "sticky" as const, left: 0, zIndex: 1, backgroundClip: "padding-box" as const }),
-  }
+ const metricCell2 = {
+  ...tdBase,
+  textAlign: "left" as const,
+  minWidth: 170,
+  width: 170,
+  maxWidth: 170,
+  position: "sticky" as const,
+  left: 0,
+  zIndex: 2,                       // thấp hơn header một chút
+   // không bị “đè” khi scroll
+  background: "#fff",              // bắt buộc để che phần scroll
+  borderRight: `1px solid ${BORDER_MAIN}`,
+  // fix iOS:
+  transform: "translateZ(0)",
+  backgroundClip: "padding-box" as const,
+}
 
   const weekCell = {
     ...tdBase,
@@ -497,24 +520,19 @@ function WeeklyTableV2({
         width: "fit-content",
       }}
     >
-      <div style={{ overflowX: "auto" }}>
+      <div style={{ overflowX: "auto",WebkitOverflowScrolling: "touch", maxWidth: "97vw" }}>
         <table
           style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontSize: isMobile ? 11 : 13,
+               width: "max-content",        // để scroll theo nội dung
+    minWidth: "100%",            // không nhỏ hơn viewport
+    borderCollapse: "collapse",
+    fontSize: isMobile ? 13 : 13,
           }}
         >
          <thead>
   <tr>
     <th
-      style={{
-        ...th,
-        width: 250,
-        minWidth: 250,
-        maxWidth: 250,
-        textAlign: "left",
-      }}
+      style={thSticky}
     >
       Hạng mục
     </th>
@@ -582,7 +600,7 @@ function WeeklyTableV2({
 </thead>
 
 
-          <tbody>
+          <tbody style={metricCell2 }>
             {table.Rows.map((r, idx) => (
               <tr
                 key={r.SequenceRow}
@@ -768,7 +786,7 @@ function BarrierTableV2({ table, title }: { table: TableBlock; title: string }) 
     whiteSpace: "nowrap" as const,
     borderBottom: `2px solid ${BORDER_MAIN}`,
     borderLeft: `1px solid #E5E5E5`,
-    fontSize: isMobile ? 11 : 13,
+    fontSize: isMobile ? 12 : 13,
     fontWeight: 600 as const,
   }
 
@@ -776,7 +794,7 @@ function BarrierTableV2({ table, title }: { table: TableBlock; title: string }) 
     padding: isMobile ? "3px 4px" : "0px 8px",
     textAlign: "right" as const,
      borderLeft :`1px solid #E5E5E5`,
-    fontSize: isMobile ? 11 : 13,
+    fontSize: isMobile ? 12 : 13,
 
   }
 
@@ -806,7 +824,7 @@ function BarrierTableV2({ table, title }: { table: TableBlock; title: string }) 
         >
           <thead>
             <tr>
-              <th style={{ ...th, width: 250, textAlign: "left", }}>{title}</th>
+              <th style={{ ...th, width: 200, textAlign: "left", }}>{title}</th>
               {columns.map((c) => (
                 <th key={c} style={th}>
                   {c}
@@ -898,7 +916,7 @@ function BarrierTableV3({ table, title }: { table: TableBlock; title: string }) 
     whiteSpace: "nowrap" as const,
     borderBottom: `2px solid ${BORDER_MAIN}`,
     borderLeft: `1px solid #E5E5E5`,
-    fontSize: isMobile ? 11 : 13,
+    fontSize: isMobile ? 12 : 13,
     fontWeight: 600 as const,
   }
 
@@ -906,7 +924,7 @@ function BarrierTableV3({ table, title }: { table: TableBlock; title: string }) 
     padding: isMobile ? "3px 4px" : "0px 8px",
     textAlign: "right" as const,
      borderLeft :`1px solid #E5E5E5`,
-    fontSize: isMobile ? 11 : 13,
+    fontSize: isMobile ? 12 : 13,
 
   }
 
@@ -936,7 +954,7 @@ function BarrierTableV3({ table, title }: { table: TableBlock; title: string }) 
         >
           <thead>
             <tr>
-              <th style={{ ...th, width: 250, textAlign: "left", color:"#c40608" }}>{title}</th>
+              <th style={{ ...th, width: 180, textAlign: "left", color:"#c40608" }}>{title}</th>
               {columns.map((c) => (
                 <th key={c} style={th}>
                   {c}
