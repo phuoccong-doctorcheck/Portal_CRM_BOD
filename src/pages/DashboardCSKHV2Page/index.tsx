@@ -40,10 +40,11 @@ import { toast } from 'react-toastify';
 import { postVerifyAPI } from 'services/api/leadReportAPI';
 import { ApiResponse, DashboardResponse } from 'services/api/leadReportAPI/types';
 import { useAppDispatch, useAppSelector } from "store/hooks";
-import { getListLeadReport, getListLeadReportDay } from 'store/leadReport';
+import { getListCSKHReport, getListLeadReport, getListLeadReportDay } from 'store/leadReport';
 import mapModifiers, { downloadBlobPDF, downloadBlobPDFOpenLink, previewBlobPDFOpenLink } from "utils/functions";
 
-import DashboardTables from './DashboardTables';
+import DashboardTables from './DashboardV2Tables';
+import MetricsDashboard from './DashboardV2Tables';
 
 import logoS from 'assets/images/logoS.png';
 import logo from 'assets/images/short_logo.svg';
@@ -86,8 +87,8 @@ const month = [
   { id: 11, label: 'Tháng 12', value: '12' },
 ]
 const brand = [
-  { id: 0, label: 'Facebook - Tầm Soát Bệnh', value: '131869073337682' },
-  { id: 1, label: 'Facebook - Trung Tâm Nội Soi', value: '556113784260055' },
+  { id: 1, label: 'Doctor Check', value: '131869073337682' },
+  { id: 2, label: 'Trung Tâm Nội Soi', value: '556113784260055' },
 ]
 const defaultBrand = {
   id: 0,
@@ -120,9 +121,254 @@ interface TableSection {
   title: string
   rows: TableRow[]
 }
-const REPORT_URL =
-  "https://app.powerbi.com/view?r=eyJrIjoiNjUxYjg2YjUtODk1YS00MmMyLWI2MjgtN2Q3MTAwOGNlMDQ5IiwidCI6ImRiNzNmYWY2LTViYzMtNDkwZC1iMGQ4LTZlZWE1ZTU4YTQ0NiIsImMiOjEwfQ%3D%3D&pageName=e7454753d5ac9ac6daa9";
-const AddAimDashboardPage: React.FC = () => {
+// Demo filter gợi ý để test:
+// rangeStart: '2026-02-01', rangeEnd: '2026-02-28'
+// selectedDay ví dụ: '2026-02-04' (tuần 1) hoặc '2026-02-11' (tuần 2)
+
+type DailyPoint = { date: string; value: number };
+
+interface MetricItem {
+  label: string;
+  dailySeries: DailyPoint[];
+  isSubItem?: boolean;
+  isRevenueHeader?: boolean;
+}
+
+interface MetricsSection {
+  title: string;
+  sidebarColor?: string;
+  items: MetricItem[];
+}
+
+// helper tạo series nhanh theo các ngày (để nhìn dễ)
+const ds = (...pairs: Array<[string, number]>): DailyPoint[] =>
+  pairs.map(([date, value]) => ({ date, value }));
+
+export const demoSections: MetricsSection[] = [
+  {
+    title: 'Tái khám',
+    sidebarColor: '#FFEB00',
+    items: [
+      // 20
+      {
+        label: 'Số khách hàng cần tái khám theo lịch hẹn của Bác sĩ',
+        dailySeries: ds(
+          // tuần 1
+          ['2026-02-02', 5],
+          ['2026-02-03', 3],
+          ['2026-02-04', 2],
+          // tuần 2
+          ['2026-02-10', 4],
+          ['2026-02-11', 6],
+        ), // total = 20
+      },
+
+      // Nhóm cần tái khám theo từng nhóm (dòng cha để gom, thường month để '-' trong excel)
+      {
+        label: 'Số khách hàng cần tái khám theo từng nhóm',
+        dailySeries: ds(), // để 0 (FE có thể render '-' nếu total=0)
+      },
+
+      // 2
+      {
+        label: 'Tái khám hết thuốc bệnh tiêu hoá',
+        dailySeries: ds(['2026-02-03', 1], ['2026-02-11', 1]),
+        isSubItem: true,
+      },
+
+      // 8
+      {
+        label: 'Tái khám hết thuốc bệnh nội khoa',
+        dailySeries: ds(['2026-02-02', 3], ['2026-02-04', 2], ['2026-02-10', 3]),
+        isSubItem: true,
+      },
+
+      // 3
+      {
+        label: 'Tái khám khi còn triệu chứng bệnh tiêu hoá',
+        dailySeries: ds(['2026-02-04', 1], ['2026-02-11', 2]),
+        isSubItem: true,
+      },
+
+      // 7
+      {
+        label: 'Tái khám triệu chứng bệnh nội khoa',
+        dailySeries: ds(['2026-02-03', 2], ['2026-02-10', 2], ['2026-02-11', 3]),
+        isSubItem: true,
+      },
+
+      // 15
+      {
+        label: 'Số khách hàng đến tái khám thực tế (theo lịch hoặc không theo lịch)',
+        dailySeries: ds(
+          ['2026-02-02', 4],
+          ['2026-02-03', 3],
+          ['2026-02-04', 1],
+          ['2026-02-10', 3],
+          ['2026-02-11', 4],
+        ), // total 15
+      },
+
+      // 3
+      {
+        label: 'Tái khám hết thuốc bệnh tiêu hoá',
+        dailySeries: ds(['2026-02-02', 1], ['2026-02-10', 2]),
+        isSubItem: true,
+      },
+      // 5
+      {
+        label: 'Tái khám hết thuốc bệnh nội khoa',
+        dailySeries: ds(['2026-02-03', 2], ['2026-02-11', 3]),
+        isSubItem: true,
+      },
+      // 2
+      {
+        label: 'Tái khám khi còn triệu chứng bệnh tiêu hoá',
+        dailySeries: ds(['2026-02-04', 1], ['2026-02-10', 1]),
+        isSubItem: true,
+      },
+      // 5
+      {
+        label: 'Tái khám triệu chứng bệnh nội khoa',
+        dailySeries: ds(['2026-02-02', 2], ['2026-02-11', 3]),
+        isSubItem: true,
+      },
+
+      // % demo: dùng value dạng số (0-1) hoặc 0-100 tuỳ bạn.
+      // Mình để dạng 75 (FE format thành "75%")
+      {
+        label: 'Tỷ lệ khách hàng đến tái khám / khách hàng có lịch hẹn',
+        dailySeries: ds(['2026-02-04', 75]), // demo 75%
+      },
+      {
+        label: 'Tái khám hết thuốc bệnh tiêu hoá',
+        dailySeries: ds(['2026-02-11', 150]),
+        isSubItem: true,
+      },
+      {
+        label: 'Tái khám hết thuốc bệnh nội khoa',
+        dailySeries: ds(['2026-02-11', 63]),
+        isSubItem: true,
+      },
+      {
+        label: 'Tái khám khi còn triệu chứng bệnh tiêu hoá',
+        dailySeries: ds(['2026-02-11', 67]),
+        isSubItem: true,
+      },
+      {
+        label: 'Tái khám triệu chứng bệnh nội khoa',
+        dailySeries: ds(['2026-02-11', 71]),
+        isSubItem: true,
+      },
+
+      // Doanh thu tổng 1,500,000
+      {
+        label: 'Doanh thu',
+        dailySeries: ds(['2026-02-03', 700000], ['2026-02-11', 800000]),
+        isRevenueHeader: true,
+      },
+      // breakdown
+      {
+        label: 'Tái khám hết thuốc bệnh tiêu hoá',
+        dailySeries: ds(['2026-02-03', 300000]),
+        isSubItem: true,
+      },
+      {
+        label: 'Tái khám hết thuốc bệnh nội khoa',
+        dailySeries: ds(['2026-02-11', 500000]),
+        isSubItem: true,
+      },
+      {
+        label: 'Tái khám khi còn triệu chứng bệnh tiêu hoá',
+        dailySeries: ds(['2026-02-10', 200000]),
+        isSubItem: true,
+      },
+      {
+        label: 'Tái khám triệu chứng bệnh nội khoa',
+        dailySeries: ds(['2026-02-11', 500000]),
+        isSubItem: true,
+      },
+    ],
+  },
+
+  {
+    title: 'F2',
+    sidebarColor: '#F6E7C8',
+    items: [
+      // 10
+      {
+        label: 'Số khách hàng đến khám',
+        dailySeries: ds(['2026-02-04', 4], ['2026-02-11', 6]),
+      },
+
+      // 8
+      {
+        label: 'Số khách hàng đến Nội soi',
+        dailySeries: ds(['2026-02-04', 3], ['2026-02-10', 5]),
+      },
+
+      // 5
+      {
+        label: 'Nội soi do có triệu chứng',
+        dailySeries: ds(['2026-02-04', 2], ['2026-02-11', 3]),
+      },
+
+      // 3
+      {
+        label: 'Nội soi để tầm soát ung thư',
+        dailySeries: ds(['2026-02-10', 1], ['2026-02-11', 2]),
+      },
+
+      // 2
+      {
+        label: 'Số khách hàng đến Khám tổng quát',
+        dailySeries: ds(['2026-02-03', 1], ['2026-02-11', 1]),
+      },
+
+      // 2
+      {
+        label: 'Số khách hàng đến Dịch vụ Lẻ',
+        dailySeries: ds(['2026-02-04', 1], ['2026-02-10', 1]),
+      },
+
+      // Doanh thu 10,000,000
+      {
+        label: 'Doanh thu',
+        dailySeries: ds(['2026-02-04', 4000000], ['2026-02-11', 6000000]),
+        isRevenueHeader: true,
+      },
+
+      // breakdown giống hình (8m, 5m, 3m, 2m, 2m)
+      {
+        label: 'Số khách hàng đến Nội soi',
+        dailySeries: ds(['2026-02-11', 8000000]),
+        isSubItem: true,
+      },
+      {
+        label: 'Nội soi do có triệu chứng',
+        dailySeries: ds(['2026-02-11', 5000000]),
+        isSubItem: true,
+      },
+      {
+        label: 'Nội soi để tầm soát ung thư',
+        dailySeries: ds(['2026-02-11', 3000000]),
+        isSubItem: true,
+      },
+      {
+        label: 'Số khách hàng đến Khám tổng quát',
+        dailySeries: ds(['2026-02-11', 2000000]),
+        isSubItem: true,
+      },
+      {
+        label: 'Số khách hàng đến Dịch vụ Lẻ',
+        dailySeries: ds(['2026-02-11', 2000000]),
+        isSubItem: true,
+      },
+    ],
+  },
+];
+
+const DashboardCSKHV2Page: React.FC = () => {
   const dispatch = useAppDispatch();
   const today = new Date();
   const todayStr = today.toLocaleDateString("vi-VN"); // 14/11/2025
@@ -170,15 +416,7 @@ const defaultMonth = month.find((m) => m.value === currentMonthValue);
   const [listCategories, setListCategories] = useState<any[]>(
     storageCategories ? JSON.parse(storageCategories) : []
   );
- 
-
-
-
-
   const params = new URLSearchParams(window.location.search);
-
-
-
 const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
   try {
     return employeeId ? JSON.parse(employeeId) : "";
@@ -194,11 +432,7 @@ const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
   month:  undefined as unknown as DropdownData,
   year:  "2025",
 });
- 
     const [tableLoading, setTableLoading] = useState(false);
-
-
-
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [conversation, setConversation] = useState<any>({
     category_id: undefined as unknown as DropdownData,
@@ -220,7 +454,7 @@ const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
 
   useEffect(() => {
 
-    document.title = "Doctor Check- Hiệu quả đặt hẹn kênh Facebook Ads";
+    document.title = "Doctor Check - DASHBOARD CHĂM SÓC KHÁCH HÀNG";
   }, []);
   useEffect(() => {
      setFilterData({
@@ -228,10 +462,10 @@ const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
     brand: defaultBrand,
     year: currentYear,
   });
-  dispatch( getListLeadReport({
-  PageId: "131869073337682",
-  Month: new Date().getMonth() + 1,   // tháng hiện tại
-  Year: new Date().getFullYear(),     // năm hiện tại
+  dispatch( getListCSKHReport({
+  launch_source_group_id: 1,
+  month: new Date().getMonth() + 1,   // tháng hiện tại
+  year: new Date().getFullYear(),     // năm hiện tại
 }))
   },[])
   useEffect(() => {
@@ -293,7 +527,7 @@ const inputRef = useRef<HTMLInputElement | null>(null);
     // setFilterData({ date_from: from, date_to: to });
      dispatch(
       getListLeadReport({
-        PageId:filterData.brand?.value,
+        launch_source_group_id:filterData.brand?.value,
         Month: filterData.month?.value,
         Year:filterData.year || 2025,
       }) as any
@@ -575,7 +809,11 @@ const statisticContent = useMemo(
         overflowY: "auto",
       }}
     >
-      <DashboardTables dataRaw={data} handleSeenDay={handleSeenDay} dataFilter={ filterData} />
+     <MetricsDashboard
+  sections={demoSections}
+  rangeStart="2026-02-01"
+  rangeEnd="2026-02-28"
+/>
     </div>
   ),
   [data]
@@ -595,7 +833,7 @@ const statisticContent = useMemo(
   return (
    <div className="p-apointment_list" style={{justifyContent:"center", paddingTop:10}}>
       {
-        isOTP === false ? <OTPForm code={code} setCode={setCode} postVerify={postVerify} setIsLoading={setIsLoading} isLoading={isLoading}/> :<Spin
+      <Spin
         spinning={loadingPage}
         size="large"
         indicator={
@@ -691,7 +929,7 @@ const statisticContent = useMemo(
                 }} />
                  <div style={headerStyle}>
         
-                <div style={{ display: "flex", justifyContent:"start",alignItems:"center",gap:20}}>        <div style={titleStyle}>Tổng leads {filterData?.year} theo tháng</div>
+                <div style={{ display: "flex", justifyContent:"start",alignItems:"center",gap:20}}>        <div style={titleStyle}>DASHBOARD CHĂM SÓC KHÁCH HÀNG</div>
       <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 16 }}>
                 <div style={{ minWidth: "250px", maxWidth: "170px" }}>
                   <Dropdown
@@ -699,8 +937,8 @@ const statisticContent = useMemo(
                       placeholder="-- Brand --"
                       defaultValue={{
                         id: 0,
-                        label: 'Facebook - Tầm Soát Bệnh',
-                        value: '131869073337682'
+                        label: 'Doctor Check',
+                        value: "1"
                       }}
                     dropdownOption={brand}
                     handleSelect={(item) => {
@@ -708,10 +946,10 @@ const statisticContent = useMemo(
                        setLoadingPage(true);
   
      dispatch(
-      getListLeadReport({
-        PageId:item?.value,
-        Month: filterData.month?.value,
-        Year:filterData.year || 2025,
+      getListCSKHReport({
+        launch_source_group_id:item?.id,
+        month: filterData.month?.value,
+        year:filterData.year || 2025,
       }) as any
     );
                     }}
@@ -728,10 +966,10 @@ const statisticContent = useMemo(
                          setLoadingPage(true);
   
      dispatch(
-      getListLeadReport({
-        PageId:filterData.brand?.value,
-        Month: item?.value,
-        Year:filterData.year || 2025,
+      getListCSKHReport({
+        launch_source_group_id:filterData.brand?.id,
+        month: item?.value,
+        year:filterData.year || 2025,
       }) as any
     );
                     }}
@@ -744,10 +982,10 @@ const statisticContent = useMemo(
                            setLoadingPage(true);
   
      dispatch(
-      getListLeadReport({
-        PageId:filterData.brand?.value,
-        Month: filterData.month?.value,
-        Year:year.toString()  || 2025,
+      getListCSKHReport({
+        launch_source_group_id:filterData.brand?.id,
+        month: filterData.month?.value,
+        year:year.toString()  || 2025,
       }) as any
     );
                     }}
@@ -964,4 +1202,4 @@ const tableCellStyle2: React.CSSProperties = {
     fontWeight: '600',
   };
 
-export default AddAimDashboardPage;
+export default DashboardCSKHV2Page;

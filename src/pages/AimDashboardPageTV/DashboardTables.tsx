@@ -8,6 +8,8 @@ import { toast } from "react-toastify"
 import { postLoadLeadReportDayAPI } from "services/api/leadReportAPI"
 import { ApiResponse, TableBlock } from "services/api/leadReportAPI/types"
 
+import { getDaysInMonth } from "."
+
 
 const useIsMobile = (breakpoint = 768) => {
   const [isMobile, setIsMobile] = useState(false)
@@ -64,32 +66,13 @@ type WeekAPIResponse = {
 /* ===================== Demo initial data ===================== */
 /** TODO: thay JSON ban đầu (format mới) của bạn vào biến dưới */
 
-
 type CellForFormat = {
   ReportValue?: number | null
   ReportColumn?: string | null
   ReportRow?: string | null
   ReportColumnParent?: string | null
 }
-/* ===================== Helpers ===================== */
-const fmtCurrency = (v: number) => {
-  if (isNaN(v)) return "-"
-  if (Math.abs(v) >= 1_000_000) return (v / 1_000_000).toFixed(2) + "M"
-  if (Math.abs(v) >= 1_000) return (v / 1_000).toFixed(2) + "K"
-  return v.toFixed(0)
-}
-const fmtNumber = (v: number) => {
-  if (isNaN(v)) return "-"
 
-  // Làm tròn tới số nguyên gần nhất
-  const rounded = Math.round(v)
-
-  // Format kiểu vi-VN: 4.000.001
-  return rounded.toLocaleString("vi-VN", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  })
-}
 const isPercentCell = (cell?: CellForFormat) => {
   if (!cell) return false
 
@@ -112,6 +95,15 @@ const formatValue = (cell?: CellForFormat) => {
 
   return fmtNumber(v)
 }
+
+
+/* ===================== Helpers ===================== */
+const fmtCurrency = (v: number) => {
+  if (isNaN(v)) return "-"
+  if (Math.abs(v) >= 1_000_000) return (v / 1_000_000).toFixed(2) + "M"
+  if (Math.abs(v) >= 1_000) return (v / 1_000).toFixed(2) + "K"
+  return v.toFixed(0)
+}
 const fmtPercent = (v: number) => {
   if (isNaN(v)) return "-"
 
@@ -133,19 +125,35 @@ const fmtPercent = (v: number) => {
       maximumFractionDigits: 1,
     }) + "%"
 }
+const fmtNumber = (v: number) => {
+  if (isNaN(v)) return "-"
+
+  // Làm tròn tới số nguyên gần nhất
+  const rounded = Math.round(v)
+
+  // Format kiểu vi-VN: 4.000.001
+  return rounded.toLocaleString("vi-VN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
+}
+
 
 const useTable = (data: ApiResponse | undefined, index: number) =>
   useMemo(() => data?.data?.Tables?.find((t) => t.TableIndex === index), [data, index])
 interface Props {
   dataRaw: ApiResponse,
+    dataRaw2: ApiResponse,
   handleSeenDay: any,
-  dataFilter:any
- }
+  dataFilter: any,
+}
+  const today = new Date();
+ const todayStr = today.toLocaleDateString("vi-VN"); // 14/11/2025
 /* ===================== Page ===================== */
-export default function DashboardPageMobile({ dataRaw, handleSeenDay, dataFilter }: Props) {
+export default function DashboardPage({ dataRaw,dataRaw2, handleSeenDay, dataFilter ,}: Props) {
     const isMobile = useIsMobile() 
   const table1 = useTable(dataRaw, 1)
-  const table2 = useTable(dataRaw, 2)
+  const table2 = useTable(dataRaw2, 1)
   const table3 = useTable(dataRaw, 3)
   const table4 = useTable(dataRaw, 4)
   const table5 = useTable(dataRaw, 5)
@@ -163,7 +171,7 @@ export default function DashboardPageMobile({ dataRaw, handleSeenDay, dataFilter
     {
       onSuccess: (data) => {
         if (data?.status) {
-           console.log('🚀');
+          console.log('🚀');
        
         } else {
           toast.error(data?.message);
@@ -186,10 +194,32 @@ export default function DashboardPageMobile({ dataRaw, handleSeenDay, dataFilter
 
   return (
     <div style={{ display: "grid", gap: 6 }}>
-      {table1 && <WeeklyTableV2 table={table1}
-    postLoadLeadReportDay={postLoadLeadReportDay} />}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{ fontSize: 20, fontWeight: 600 }}>Facebook - Tầm Soát Bệnh</span>
+         <div style={statsContainerStyle}>
+        <div style={statItemStyle}>
+          {/* <span style={statLabelStyle}>
+            Hiệu quả đặt hẹn kênh Facebook Ads
+          </span> */}
+        </div>
+        <div style={statItemStyle}>
+                  <span style={statLabelStyle}>Tháng: <strong>{dataFilter?.month?.value}/{dataFilter?.year}</strong></span>
+        </div>
+        <div style={statItemStyle}>
+                  <span style={statLabelStyle2}>Số ngày trong tháng: <strong>{getDaysInMonth(Number(dataFilter?.month?.value), Number(dataFilter?.year))
+ }</strong></span>
+        </div>
+        <div style={statItemStyle}>
+          <span style={statLabelStyle2}>Ngày xem báo cáo: <strong>  {todayStr}</strong></span>
+        </div>
+      </div>
+      </div>
       
-        <div style={{
+      {table1 && <WeeklyTableV2 table={table1}
+        postLoadLeadReportDay={postLoadLeadReportDay} />}
+        <span style={{fontSize:20, fontWeight:600}}>Facebook - Trung Tâm Nội Soi</span>
+      {table2 && <WeeklyTableV2 table={table2}
+    postLoadLeadReportDay={postLoadLeadReportDay} />}
+        {/* <div style={{
         display: "grid",
        gridTemplateColumns:  "0.8fr" ,
         gap: 6, maxWidth: "100%",
@@ -198,8 +228,7 @@ export default function DashboardPageMobile({ dataRaw, handleSeenDay, dataFilter
         <div style={{
         display: "grid",
        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-          gap: 6, maxWidth: "100%",
-        width:"98vw"
+        gap: 6, maxWidth: "90%",
       }}>
         <div style={{
           display: "flex",
@@ -210,7 +239,7 @@ export default function DashboardPageMobile({ dataRaw, handleSeenDay, dataFilter
           {table2 && <BarrierTableV2 table={table2} title="Inbox ấm → Đặt hẹn" />}
           {table4 && <BarrierTableV2 table={table4} title="Đặt hẹn → đến khám" />}
             {table6 && <BarrierTableV2 table={table6} title="Đến khám → Thực hiện dịch vụ" />}
-            
+             {table7 && <BarrierTableV3 table={table7} title="Đang tương tác quá 14 ngày" />}
         </div>
        <div style={{
           display: "flex",
@@ -219,11 +248,11 @@ export default function DashboardPageMobile({ dataRaw, handleSeenDay, dataFilter
         }}>
           {table3 && <BarrierTableV2 table={table3} title="Rào cản đặt hẹn thất bại" />}
             {table5 && <BarrierTableV2 table={table5} title="Rào cản đặt hẹn mà không đến" />}
-             {table7 && <BarrierTableV3 table={table7} title="Đang tương tác quá 14 ngày" />}
+            
         </div>
       </div>
       
-      </div>
+      </div> */}
     </div>
   )
 }
@@ -255,14 +284,23 @@ function WeeklyTableV2({
     })
 
   /* ===================== Chuẩn bị data ===================== */
-  const summaryColSeqs = useMemo(() => {
-    const firstRow = table.Rows[0]
-    const cells = Object.values(firstRow.Cells)
-    return cells
-      .filter((c) => !c.IsDayColumn)
-      .sort((a, b) => a.SequenceColumn - b.SequenceColumn)
-      .map((c) => c.SequenceColumn)
-  }, [table])
+const summaryColSeqs = useMemo(() => {
+  const firstRow = table.Rows[0]
+  if (!firstRow) return []
+
+  const cells = Object.values(firstRow.Cells)
+
+  return cells
+    .filter(
+      (c) =>
+        !c.IsDayColumn &&                      // chỉ lấy cột summary
+        c.ReportColumnParent !== "Mục tiêu/ngày" &&  // loại theo columnParent
+        c.ReportColumn !== "Mục tiêu/ngày"           // phòng khi tên cột là "Mục tiêu/ngày"
+    )
+    .sort((a, b) => a.SequenceColumn - b.SequenceColumn)
+    .map((c) => c.SequenceColumn)
+}, [table])
+
 
   const summaryColNames = useMemo(() => {
     const firstRow = table.Rows[0]
@@ -312,6 +350,7 @@ function WeeklyTableV2({
   }
 
   const [loadedWeeks, setLoadedWeeks] = useState<Record<string, LoadedWeek>>({})
+  
     useEffect(() => {
     setExpandedWeek(null)
     setLoadedWeeks({})
@@ -356,6 +395,44 @@ function WeeklyTableV2({
 
   return map
 }, [table, baseWeeks])
+  // ... dưới baseWeekDays
+
+useEffect(() => {
+  // nếu đã có tuần đang mở rồi thì không đụng nữa
+  if (expandedWeek) return
+
+  if (!baseWeeks.length) return
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  let defaultWeekName: string | null = null
+
+  for (const w of baseWeeks) {
+    const days = baseWeekDays.get(w.weekName) ?? []
+
+    if (!defaultWeekName && days.length) {
+      // fallback: tuần đầu tiên có ngày
+      defaultWeekName = w.weekName
+    }
+
+    const hasToday = days.some((d) => {
+      const dDate = new Date(d.dateIso)
+      dDate.setHours(0, 0, 0, 0)
+      return dDate.getTime() === today.getTime()
+    })
+
+    if (hasToday) {
+      // ưu tiên tuần chứa ngày hiện tại
+      defaultWeekName = w.weekName
+      break
+    }
+  }
+
+  if (defaultWeekName) {
+    setExpandedWeek(defaultWeekName)
+  }
+}, [baseWeeks, baseWeekDays, expandedWeek])
 
 
 
@@ -363,7 +440,10 @@ function WeeklyTableV2({
     loadedWeeks[weekName]?.days ?? baseWeekDays.get(weekName) ?? []
 
   const getCellBySeq = (row: TableBlock["Rows"][number], seq: number) =>
-    Object.values(row.Cells).find((c) => c.SequenceColumn === seq)
+  {
+
+    return Object.values(row.Cells).find((c) => c.SequenceColumn === seq)
+  }
 
   const dayValueForRowFormatted = (
     row: TableBlock["Rows"][number],
@@ -373,7 +453,7 @@ function WeeklyTableV2({
     const cell = Object.values(row.Cells).find(
       (c) => c.IsDayColumn && c.SequenceColumn === seq && c.ReportDate === iso,
     )
-    return cell ? fmtNumber(cell?.ReportValue) : undefined
+    return cell ? fmtNumber(cell.ReportValue) : undefined
   }
 
   const weekTotalForRow = (
@@ -439,7 +519,7 @@ function WeeklyTableV2({
 
           valuesByRow[row.ReportRow][cell.ReportDate] = {
             value: cell.ReportValue,
-            formatted: fmtNumber(cell?.ReportValue) || undefined,
+            formatted:  fmtNumber(cell.ReportValue) || undefined,
             color: cell.FontColor || undefined,
             link: cell.LinkUrl || undefined,
           }
@@ -480,7 +560,7 @@ function WeeklyTableV2({
     return c
       ? {
           value: c.ReportValue,
-          formatted: fmtNumber(c?.ReportValue)|| undefined,
+          formatted:  fmtNumber(c.ReportValue) || undefined,
           color: c.FontColor || undefined,
           link: c.LinkUrl || undefined,
         }
@@ -498,8 +578,9 @@ function WeeklyTableV2({
     whiteSpace: "nowrap" as const,
     borderBottom: `2px solid ${BORDER_MAIN}`,
     borderLeft: `1px solid #E5E5E5`,
-    fontSize: isMobile ? 12 : 13,
+    fontSize: isMobile ? 11 : 16,
     fontWeight: 600 as const,
+    minHegiht: isMobile ? 24 : 40,
   }
 
   const th = thBase
@@ -508,74 +589,46 @@ function WeeklyTableV2({
     background: "#FFF3E0",
     color: "#E65100",
   }
-const thSticky = {
-  ...thBase,
-  textAlign: "left" as const,
-  minWidth: 200,
-  width: 200,
-  maxWidth: 200,
-  position: "sticky" as const,
-  left: 0,
-  zIndex: 3,                 // cao hơn body
-  background: "#fff",        // bắt buộc để che phần scroll
-  borderRight: `2px solid rgb(243 243 243)`,
-  // fix blur iOS:
-  transform: "translateZ(0)",
-  willChange: "transform",
-}
+
   const tdBase = {
-    padding: isMobile ? "3px 4px" : "0px 8px",
+    padding: isMobile ? "3px 4px" : "0px 4px",
     textAlign: "right" as const,
     borderLeft: `1px solid #E5E5E5`,
-    fontSize: isMobile ? 12 : 13,
-    maxWidth: 120,
-    minWidth: 90,
+    fontSize: isMobile ? 11 : 20,
+    maxWidth: 150,
+    minWidth: 100,
+  }
+    const tdBaseW = {
+    padding: isMobile ? "3px 4px" : "0px 4px",
+    textAlign: "right" as const,
+    borderLeft: `1px solid #E5E5E5`,
+    fontSize: isMobile ? 11 : 12,
+      // maxWidth: 150,
+      width:"fit-content",
+    minWidth: 100,
   }
   const tdBase1 = {
     padding: isMobile ? "3px 4px" : "0px 8px",
     textAlign: "right" as const,
     borderLeft: `1px solid #E5E5E5`,
-    fontSize: isMobile ? 12 : 13,
-    maxWidth: 80,
-    minWidth: 80,
+    fontSize: isMobile ? 11 : 20,
+    
+    minWidth: 100,
+    width:"fit-content"
   }
 
   const td = tdBase
   const td1 = tdBase1
+  
+  const metricCell2 = {
+    ...tdBaseW,
+    borderRight: `2px solid rgb(17, 141, 255)`,
+    textAlign: "left" as const,
+    ...(isMobile
+      ? {}
+      : { position: "sticky" as const, left: 0, zIndex: 1, backgroundClip: "padding-box" as const }),
+  }
 
- const metricCell2 = {
-  ...tdBase,
-  textAlign: "left" as const,
-  minWidth: 170,
-  width: 170,
-  maxWidth: 170,
-  position: "sticky" as const,
-  left: 0,
-  zIndex: 2,                       // thấp hơn header một chút
-   // không bị “đè” khi scroll
-  background: "#fff",              // bắt buộc để che phần scroll
-  borderRight: `1px solid ${BORDER_MAIN}`,
-  // fix iOS:
-  transform: "translateZ(0)",
-  backgroundClip: "padding-box" as const,
-}
-   const metricCell3 = {
-  ...tdBase,
-  textAlign: "left" as const,
-  minWidth: 167,
-  width: 167,
-  maxWidth: 170,
-  position: "sticky" as const,
-  left: 0,
-  zIndex: 2,       
-  marginRight:2,                // thấp hơn header một chút
-   // không bị “đè” khi scroll
-  background: "#fff",              // bắt buộc để che phần scroll
-  borderRight: `2px solid ${BORDER_MAIN}`,
-  // fix iOS:
-  transform: "translateZ(0)",
-  backgroundClip: "padding-box" as const,
-}
   const weekCell = {
     ...tdBase,
     fontWeight: 600,
@@ -596,19 +649,24 @@ const thSticky = {
         width: "fit-content",
       }}
     >
-      <div style={{ overflowX: "auto",WebkitOverflowScrolling: "touch", maxWidth: "97vw" }}>
+      <div style={{ overflowX: "auto" }}>
         <table
           style={{
-               width: "max-content",        // để scroll theo nội dung
-    minWidth: "100%",            // không nhỏ hơn viewport
-    borderCollapse: "collapse",
-    fontSize: isMobile ? 13 : 13,
+            width: "100%",
+            borderCollapse: "collapse",
+            fontSize: isMobile ? 11 : 16,
           }}
         >
          <thead>
   <tr>
     <th
-      style={thSticky}
+      style={{
+        ...th,
+        width: 180,
+        minWidth: 180,
+        maxWidth: 180,
+        textAlign: "left",
+      }}
     >
       Hạng mục
     </th>
@@ -623,7 +681,7 @@ const thSticky = {
       const open = expandedWeek === w.weekName
       const days = weekDays(w.weekName)
       // const arrow = open ? "▲" : "▼"
-      const arrow = open ? "▸": "▾"
+      const arrow = open ? <svg width="15px" height="15px" viewBox="0 0 1024 1024" className="icon" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M256 120.768L306.432 64 768 512l-461.568 448L256 903.232 659.072 512z" fill="#000000"></path></g></svg>: <svg width="15px" height="15px" viewBox="0 0 1024 1024" className="icon" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M903.232 256l56.768 50.432L512 768 64 306.432 120.768 256 512 659.072z" fill="#000000"></path></g></svg>
 
       if (!open) {
         return (
@@ -676,21 +734,22 @@ const thSticky = {
 </thead>
 
 
-          <tbody style={metricCell2 }>
-             {table.Rows.map((r, idx) => (
+          <tbody>
+            {table.Rows.map((r, idx) => (
               <tr
                 key={r.SequenceRow}
-                style={{ background: idx % 2 ? "#e8e8e8" : "#FFFFFF" }}
+                style={{ background: idx % 2 ? "#e8e8e8" : "#FFFFFF",height:25 }}
               >
                 <td style={metricCell2}>{r.ReportRow}</td>
 
                 {/* SUMMARY */}
                 {summaryColSeqs.map((seq) => {
-  const c = getCellBySeq(r, seq)
- const text = formatValue(c)
+
+                  const c = getCellBySeq(r, seq)
+                  
+  const text = formatValue(c)
 
   const link = c?.LinkUrl
-
   let color = c?.FontColor ?? undefined
 
   const columnParent = c?.ReportColumnParent
@@ -832,7 +891,7 @@ const thSticky = {
     typeof rawTotal === "string"
       ? rawTotal
       : typeof rawTotal === "number"
-      ? fmtCurrency(rawTotal)
+      ? fmtNumber(rawTotal)
       : "-"
 
   // cố gắng parse số từ totalText (trường hợp format có dấu phẩy, đơn vị,...)
@@ -939,7 +998,7 @@ const thSticky = {
       const v = dayValueForRow(r, w.weekName, d.dateIso, w.seq)
       const text =
         v?.formatted ??
-        (typeof v?.value === "number" ? fmtCurrency(v.value) : "-")
+        (typeof v?.value === "number" ? fmtNumber(v.value) : "-")
 
       return (
         <td
@@ -1004,9 +1063,7 @@ function BarrierTableV2({ table, title }: { table: TableBlock; title: string }) 
 
   const renderValue = (cell?: ReturnType<typeof getCellByName>) => {
     if (!cell) return "-"
-    if (cell.ReportColumn.includes("Tỉ lệ")) return fmtPercent(cell.ReportValue)
-    if (cell.ReportColumn === "Số lượng") return (cell.ReportValue ?? 0).toFixed(0)
-    return fmtNumber(cell?.ReportValue) || String(cell.ReportValue)
+   return formatValue(cell)
   }
 
   /* ===== STYLE giống block nhỏ ở dưới hình 1 ===== */
@@ -1021,7 +1078,7 @@ function BarrierTableV2({ table, title }: { table: TableBlock; title: string }) 
     whiteSpace: "nowrap" as const,
     borderBottom: `2px solid ${BORDER_MAIN}`,
     borderLeft: `1px solid #E5E5E5`,
-    fontSize: isMobile ? 12 : 13,
+    fontSize: isMobile ? 11 : 16,
     fontWeight: 600 as const,
   }
 
@@ -1029,7 +1086,7 @@ function BarrierTableV2({ table, title }: { table: TableBlock; title: string }) 
     padding: isMobile ? "3px 4px" : "0px 8px",
     textAlign: "right" as const,
      borderLeft :`1px solid #E5E5E5`,
-    fontSize: isMobile ? 12 : 13,
+    fontSize: isMobile ? 11 : 16,
 
   }
 
@@ -1054,12 +1111,12 @@ function BarrierTableV2({ table, title }: { table: TableBlock; title: string }) 
           style={{
             width: "100%",
             borderCollapse: "collapse",
-            fontSize: isMobile ? 11 : 13,
+            fontSize: isMobile ? 11 : 16,
           }}
         >
           <thead>
             <tr>
-              <th style={{ ...th, width: 200, textAlign: "left", }}>{title}</th>
+              <th style={{ ...th, width: 250, textAlign: "left", }}>{title}</th>
               {columns.map((c) => (
                 <th key={c} style={th}>
                   {c}
@@ -1134,9 +1191,8 @@ function BarrierTableV3({ table, title }: { table: TableBlock; title: string }) 
 
   const renderValue = (cell?: ReturnType<typeof getCellByName>) => {
     if (!cell) return "-"
-    if (cell.ReportColumn.includes("Tỉ lệ")) return fmtPercent(cell.ReportValue)
-    if (cell.ReportColumn === "Số lượng") return (cell.ReportValue ?? 0).toFixed(0)
-    return fmtNumber(cell?.ReportValue) || String(cell.ReportValue)
+    return formatValue(cell)
+
   }
 
   /* ===== STYLE giống block nhỏ ở dưới hình 1 ===== */
@@ -1151,7 +1207,7 @@ function BarrierTableV3({ table, title }: { table: TableBlock; title: string }) 
     whiteSpace: "nowrap" as const,
     borderBottom: `2px solid ${BORDER_MAIN}`,
     borderLeft: `1px solid #E5E5E5`,
-    fontSize: isMobile ? 12 : 13,
+    fontSize: isMobile ? 11 : 16,
     fontWeight: 600 as const,
   }
 
@@ -1159,7 +1215,7 @@ function BarrierTableV3({ table, title }: { table: TableBlock; title: string }) 
     padding: isMobile ? "3px 4px" : "0px 8px",
     textAlign: "right" as const,
      borderLeft :`1px solid #E5E5E5`,
-    fontSize: isMobile ? 12 : 13,
+    fontSize: isMobile ? 11 : 16,
 
   }
 
@@ -1176,7 +1232,7 @@ function BarrierTableV3({ table, title }: { table: TableBlock; title: string }) 
         borderRadius: 4,
         boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
         border: `2px solid ${BORDER_MAIN}`,
-         maxWidth: "82%",
+         maxWidth: "81%",
       }}
     >
       <div style={{ overflowX: "auto" }}>
@@ -1184,12 +1240,12 @@ function BarrierTableV3({ table, title }: { table: TableBlock; title: string }) 
           style={{
             width: "100%",
             borderCollapse: "collapse",
-            fontSize: isMobile ? 11 : 13,
+            fontSize: isMobile ? 11 : 16,
           }}
         >
           <thead>
             <tr>
-              <th style={{ ...th, width: 200, textAlign: "left", color:"#c40608" }}>{title}</th>
+              <th style={{ ...th, width: 250, textAlign: "left", color:"#c40608" }}>{title}</th>
               {columns.map((c) => (
                 <th key={c} style={th}>
                   {c}
@@ -1238,3 +1294,151 @@ function BarrierTableV3({ table, title }: { table: TableBlock; title: string }) 
     </div>
   )
 }
+
+const tableHeaderStyle: React.CSSProperties = {
+  border: "1px solid #ddd",
+  padding: "0px 6px",
+  textAlign: "left",
+  fontWeight: "bold",
+  fontSize: "13px",
+  backgroundColor: "#f0f0f0",
+}
+const tableHeaderStyle2: React.CSSProperties = {
+  border: "1px solid #ddd",
+  padding: "0px 6px",
+  textAlign: "right",
+  fontWeight: "bold",
+  fontSize: "13px",
+  backgroundColor: "#f0f0f0",
+}
+
+const tableCellStyle: React.CSSProperties = {
+  border: "1px solid #ddd",
+  padding: "1px 6px",
+  fontSize: "13px",
+  textAlign: "left",
+  minHeight: "20px",
+}
+const tableCellStyle2: React.CSSProperties = {
+  border: "1px solid #ddd",
+  padding: "1px 6px",
+  fontSize: "13px",
+  textAlign: "right",
+  minHeight: "20px",
+}
+ const containerStyle: React.CSSProperties = {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    padding: '0px 0px',
+    fontFamily: 'Arial, sans-serif',
+  };
+
+  const headerStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: '1.95fr 1fr',
+    alignItems: 'center',
+    marginBottom: '0px',
+    gap: '20px',
+    
+  };
+
+  const logoStyle: React.CSSProperties = {
+    width: '200px',
+    height: '50px',
+    backgroundColor: '#f5a623',
+    borderRadius: '4px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#1e5a96',
+    fontWeight: 'bold',
+    fontSize: '14px',
+    
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: '22px',
+    fontWeight: 'normal',
+    fontStyle: 'normal',fontFamily:'wf_standard-font, helvetica, arial, sans-serif',
+    color: '#333333',
+    flex: 1,
+  };
+
+  const filterContainerStyle: React.CSSProperties = {
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  };
+
+  const selectStyle: React.CSSProperties = {
+    padding: '8px 12px',
+    border: '1px solid #cccccc',
+    borderRadius: '4px',
+    fontSize: '13px',
+    color: '#666666',
+    backgroundColor: '#ffffff',
+    cursor: 'pointer',
+    appearance: 'none',
+    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 8px center',
+    backgroundSize: '16px',
+    paddingRight: '32px',
+  };
+
+  const channelSelectStyle: React.CSSProperties = {
+    ...selectStyle,
+    minWidth: '280px',
+  };
+
+  const monthSelectStyle: React.CSSProperties = {
+    ...selectStyle,
+    minWidth: '70px',
+  };
+
+  const yearSelectStyle: React.CSSProperties = {
+    ...selectStyle,
+    minWidth: '100px',
+  };
+
+  const statsContainerStyle: React.CSSProperties = {
+    display: 'flex',
+    gap: '80px',
+    width:"82vw",
+    alignItems: 'center',
+    // paddingTop: '10px',
+    // marginBottom: '15px',
+    paddingLeft: 10,
+    justifyContent:"end"
+  };
+
+  const statItemStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  };
+
+  const statLabelStyle: React.CSSProperties = {
+
+    fontWeight: '700',
+    textAnchor: "start",
+    fill: "rgb(51, 51, 51)",
+    fontSize: "20px",
+    fontStyle: "normal",
+    
+  };
+  const statLabelStyle2: React.CSSProperties = {
+
+    fontWeight: '500',
+    textAnchor: "start",
+    fill: "rgb(51, 51, 51)",
+    fontSize: "20px",
+    fontStyle: "normal",
+    
+  };
+  const statValueStyle: React.CSSProperties = {
+    fontSize: '13px',
+    color: '#333333',
+    fontWeight: '600',
+  };

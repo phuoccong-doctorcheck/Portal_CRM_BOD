@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-undef */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable @typescript-eslint/no-use-before-define */
@@ -23,6 +24,7 @@ import Button from 'components/atoms/Button';
 import Dropdown, { DropdownData } from "components/atoms/Dropdown";
 import YearSelector2 from 'components/atoms/RangeYear2';
 import Typography from 'components/atoms/Typography';
+import OTPForm from 'components/molecules/FormOTP/OTPForm';
 import PublicHeader from 'components/templates/PublicHeader';
 import PublicHeaderStatistic from 'components/templates/PublicHeaderStatistic';
 import PublicLayout from "components/templates/PublicLayout";
@@ -33,9 +35,11 @@ import _ from "lodash";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Edit, User, Tag, Users, Calendar, Clock ,Phone, MapPin,IterationCcw} from "lucide-react"
 import moment from "moment";
+import { hasPinCookie, setPinCookie } from 'pages/AimDashboardPage';
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
+import { postVerifyAPI } from 'services/api/leadReportAPI';
 import { ApiResponse, DashboardResponse } from 'services/api/leadReportAPI/types';
 import { useAppDispatch, useAppSelector } from "store/hooks";
 import { getListLeadReport, getListLeadReportDay } from 'store/leadReport';
@@ -47,9 +51,26 @@ import logoS from 'assets/images/logoS.png';
 import logo from 'assets/images/short_logo.svg';
 const { RangePicker } = DatePicker;
 
-
+export const PIN_COOKIE_NAME = "pin_code"
 // Bucket ưu tiên: lấy từ source, nếu không có thì thử chanel
+export function checkOrSetPinCookie(PIN_VALUE?:any): boolean {
+  if (typeof document === "undefined") return false // tránh lỗi SSR
 
+  const cookieStr = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(`${PIN_COOKIE_NAME}=`))
+
+  if (cookieStr) {
+    // đã có pin trong cookie
+    return true
+  }
+
+  // chưa có -> set cookie mới với mã 4212, sống 24h
+  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toUTCString()
+  document.cookie = `${PIN_COOKIE_NAME}=${PIN_VALUE}; expires=${expires}; path=/; SameSite=Lax`
+
+  return false
+}
 const month = [
   { id: 0, label: 'Tháng 1', value: '01' },
   { id: 1, label: 'Tháng 2', value: '02' },
@@ -153,7 +174,24 @@ const defaultMonth = month.find((m) => m.value === currentMonthValue);
 
 
 
-
+    const { mutate: postHideShow } = useMutation(
+          'post-footer-form',
+          (data: any) => postVerifyAPI(data),
+          {
+            onSuccess: (data) => {
+              if (data.status === true) {
+                toast.success(data.message || "Lưu mục tiêu thành công");
+                const hasPin = checkOrSetPinCookie()
+              } else {
+                toast.error(data.message || "Lưu mục tiêu thất bại, vui lòng thử lại sau");
+              }
+          
+            },
+            onError: (error:any) => {
+              console.error('🚀: error --> getCustomerByCustomerId:', error);
+            },
+          },
+  );
   const params = new URLSearchParams(window.location.search);
 
 
@@ -174,7 +212,6 @@ const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
   month:  undefined as unknown as DropdownData,
   year:  "2025",
 });
-  console.log(data?.data?.Tables?.length)
  
     const [tableLoading, setTableLoading] = useState(false);
 
@@ -219,7 +256,6 @@ const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
     if (storeLeadReport.status)
     {
        setLoadingPage(false)
-    console.log("storeLeadReport", storeLeadReport)
    setData(storeLeadReport)
     }
    
@@ -242,10 +278,7 @@ const inputRef = useRef<HTMLInputElement | null>(null);
     
   }, [editingCell]); // <- không có editValue trong dependency để tránh re-select khi nhập
   const handleUpdate = () => {
-  console.log("sections", sections)
    setLoadingPage(true);
-    // setFilterData({ date_from: from, date_to: to });
-    console.log(filterData)
      dispatch(
       getListLeadReport({
         PageId:filterData.brand?.value,
@@ -255,10 +288,8 @@ const inputRef = useRef<HTMLInputElement | null>(null);
     );
   };
     const handleSeenDay = (WeekIndex:number) => {
-  console.log("sections", sections)
    setLoadingPage(true);
     // setFilterData({ date_from: from, date_to: to });
-    console.log(filterData)
      dispatch(
       getListLeadReportDay({
         PageId:filterData.brand?.value,
@@ -531,7 +562,7 @@ const statisticContent = useMemo(
         justifyContent: "start",
         overflowY: "auto",
         overflowX: "hidden",
-        paddingBottom: 80,
+        paddingBottom: 170,
       }}
     >
       <DashboardPageMobile dataRaw={data} handleSeenDay={handleSeenDay} dataFilter={ filterData} />
@@ -540,156 +571,196 @@ const statisticContent = useMemo(
   [data]
 );
   
-
+  const [isOTP,setIsOTP] = useState(false)
+  const [code, setCode] = useState<string[]>(["", "", "", "",])
+   const { mutate: postVerify } = useMutation(
+            'post-footer-form',
+            (data: any) => postVerifyAPI(data),
+            {
+             onSuccess: (data) => {
+    if (data.status === true) {
+      toast.success(data.message || "Lưu mục tiêu thành công");
+  
+      // Lưu PIN (ghép 4 ô code thành string, ví dụ "4212")
+      const pin = code.join("");
+      setPinCookie(data.data);
+  
+      // Đã verify thành công -> không cần OTP nữa
+      setIsOTP(true);
+      setIsLoading(false);
+    } else {
+      // Thất bại -> vẫn yêu cầu OTP
+      setIsOTP(false);
+      toast.error(data.message || "Lưu mục tiêu thất bại, vui lòng thử lại sau");
+      setIsLoading(false);
+    }
+  },
+  
+              onError: (error:any) => {
+            
+                  toast.error(data.message || "Lưu mục tiêu thất bại, vui lòng thử lại sau");
+                setIsLoading(false)
+                setIsOTP(false);
+              },
+            },
+    );
+  // Khi load trang: kiểm tra trong cookie đã có PIN chưa
+  useEffect(() => {
+    const hasPin = hasPinCookie()
+    // Nếu đã có PIN -> không cần OTP nữa
+    // Nếu chưa có PIN -> yêu cầu nhập OTP
+    setIsOTP(hasPin)
+  }, [])
 
   return (
    <div style={{ paddingTop:10}}>
-    
-      <Spin
-        spinning={loadingPage}
-        size="large"
-        indicator={
-          <img
-            className="loader"
-            style={{ width: 70, height: 70, objectFit: "cover", backgroundColor: "transparent" }}
-            src={logo}
-          />
-        }
-      >
-        <div >
-          {/* Header filter của bạn vẫn giữ nguyên để dùng chung cả 2 tab (nếu muốn filter cho cả báo cáo) */}
+      {
+        isOTP === false ? <OTPForm code={code} setCode={setCode} postVerify={postVerify} setIsLoading={setIsLoading} isLoading={isLoading} /> :
+          <Spin
+            spinning={loadingPage}
+            size="large"
+            indicator={
+              <img
+                className="loader"
+                style={{ width: 70, height: 70, objectFit: "cover", backgroundColor: "transparent" }}
+                src={logo}
+              />
+            }
+          >
+            <div >
+              {/* Header filter của bạn vẫn giữ nguyên để dùng chung cả 2 tab (nếu muốn filter cho cả báo cáo) */}
          
 
-          {/* ✅ Tabs chính */}
-             <>
+              {/* ✅ Tabs chính */}
+              <>
                     
-             <div style={containerStyle}>
-              {/* Header with Logo and Title */}
-              <div style={{
-                borderBottom: '3px solid #0d6abf',
-                paddingBottom: '10px',
+                <div style={containerStyle}>
+                  {/* Header with Logo and Title */}
+                  <div style={{
+                    borderBottom: '3px solid #0d6abf',
+                    paddingBottom: '10px',
                 
-                display: 'grid',
-                gridTemplateColumns: '1fr 1.6fr',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1.6fr',
                 
-              }}>
+                  }}>
                
-                <div style={{display:"flex", justifyContent:"center", alignItems:"center", }}>
-                    <img src={logo} alt="" style={{
-                  width:"60px"
-                }} />
-                 </div>
+                    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", }}>
+                      <img src={logo} alt="" style={{
+                        width: "60px"
+                      }} />
+                    </div>
               
                 
         
                 
                   
-      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 0, }}>
-                <div style={{maxWidth:"90%",minWidth:"90%"}}>
-                  <Dropdown
-                    variant="simple"
-                      placeholder="-- Brand --"
-                      defaultValue={{
-                        id: 0,
-                        label: 'Facebook - Tầm Soát Bệnh',
-                        value: '131869073337682'
-                      }}
-                    dropdownOption={brand}
-                    handleSelect={(item) => {
-                      setFilterData({ ...filterData, brand: item });
-                       setLoadingPage(true);
+                    <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 0, }}>
+                      <div style={{ maxWidth: "90%", minWidth: "90%" }}>
+                        <Dropdown
+                          variant="simple"
+                          placeholder="-- Brand --"
+                          defaultValue={{
+                            id: 0,
+                            label: 'Facebook - Tầm Soát Bệnh',
+                            value: '131869073337682'
+                          }}
+                          dropdownOption={brand}
+                          handleSelect={(item) => {
+                            setFilterData({ ...filterData, brand: item });
+                            setLoadingPage(true);
   
-     dispatch(
-      getListLeadReport({
-        PageId:item?.value,
-        Month: filterData.month?.value,
-        Year:filterData.year || 2025,
-      }) as any
-    );
-                    }}
-                  />
+                            dispatch(
+                              getListLeadReport({
+                                PageId: item?.value,
+                                Month: filterData.month?.value,
+                                Year: filterData.year || 2025,
+                              }) as any
+                            );
+                          }}
+                        />
                       </div>
-                       <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap:4,maxWidth:"90%", minWidth:"90%"}}>
-                <div style={{ maxWidth: "50%" ,minWidth:"48%"}}>
-                  <Dropdown
-                    variant="simple"
-                      placeholder="-- Tháng --"
-                      defaultValue={month.find(m => m.value === currentMonthValue)}
-                    dropdownOption={month}
-                    handleSelect={(item) => {
-                      setFilterData({ ...filterData, month: item });
-                         setLoadingPage(true);
+                      <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 4, maxWidth: "90%", minWidth: "90%" }}>
+                        <div style={{ maxWidth: "50%", minWidth: "48%" }}>
+                          <Dropdown
+                            variant="simple"
+                            placeholder="-- Tháng --"
+                            defaultValue={month.find(m => m.value === currentMonthValue)}
+                            dropdownOption={month}
+                            handleSelect={(item) => {
+                              setFilterData({ ...filterData, month: item });
+                              setLoadingPage(true);
   
-     dispatch(
-      getListLeadReport({
-        PageId:filterData.brand?.value,
-        Month: item?.value,
-        Year:filterData.year || 2025,
-      }) as any
-    );
-                    }}
-                  />
-                </div>
-                <div style={{ maxWidth: "50%",minWidth:"48%" }}>
-                  <YearSelector2
-                    onChange={(_, __, year) => {
-                        setFilterData({ ...filterData, year: year.toString() });
-                           setLoadingPage(true);
+                              dispatch(
+                                getListLeadReport({
+                                  PageId: filterData.brand?.value,
+                                  Month: item?.value,
+                                  Year: filterData.year || 2025,
+                                }) as any
+                              );
+                            }}
+                          />
+                        </div>
+                        <div style={{ maxWidth: "50%", minWidth: "48%" }}>
+                          <YearSelector2
+                            onChange={(_, __, year) => {
+                              setFilterData({ ...filterData, year: year.toString() });
+                              setLoadingPage(true);
   
-     dispatch(
-      getListLeadReport({
-        PageId:filterData.brand?.value,
-        Month: filterData.month?.value,
-        Year:year.toString()  || 2025,
-      }) as any
-    );
-                    }}
-                  />
-                </div></div>
+                              dispatch(
+                                getListLeadReport({
+                                  PageId: filterData.brand?.value,
+                                  Month: filterData.month?.value,
+                                  Year: year.toString() || 2025,
+                                }) as any
+                              );
+                            }}
+                          />
+                        </div></div>
                 
-                  </div>
+                    </div>
                 
    
-              </div>
+                  </div>
               
      
-              <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:10, marginTop:5,}}>
-                <div style={{display:"grid", gridTemplateColumns:"1fr 1fr",paddingRight:5,paddingLeft:5,justifyContent:"space-between"}}>
-                  <span style={statLabelStyle}>Tháng <strong>{filterData?.month?.value}/{filterData?.year} ({getDaysInMonth(Number(filterData?.month?.value), Number(filterData?.year))} ngày)</strong></span>
-                   <span style={statLabelStyle2}> <strong>Ngày xem:  {todayStr}</strong></span>
-                </div>
-                <div style={{ display: 'flex',justifyContent:"center",alignItems:"center"}}>
-                   <span style={statLabelStyle3}>
-            Hiệu quả đặt hẹn kênh Facebook Ads
-          </span>
-                </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 10, marginTop: 5, }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", paddingRight: 5, paddingLeft: 5, justifyContent: "space-between" }}>
+                      <span style={statLabelStyle}>Tháng <strong>{filterData?.month?.value}/{filterData?.year} ({getDaysInMonth(Number(filterData?.month?.value), Number(filterData?.year))} ngày)</strong></span>
+                      <span style={statLabelStyle2}> <strong>Ngày xem:  {todayStr}</strong></span>
                     </div>
-      {/* Stats Section */}
+                    <div style={{ display: 'flex', justifyContent: "center", alignItems: "center" }}>
+                      <span style={statLabelStyle3}>
+                        Hiệu quả đặt hẹn kênh Facebook Ads
+                      </span>
+                    </div>
+                  </div>
+                  {/* Stats Section */}
       
-    </div>
-                    {/* Nếu chưa chọn filter thì vẫn hiển thị Empty như bạn đang làm */}
+                </div>
+                {/* Nếu chưa chọn filter thì vẫn hiển thị Empty như bạn đang làm */}
                  
-            {
-              data?.data?.Tables?.length === 0 ? (
+                {
+                  data?.data?.Tables?.length === 0 ? (
                     <div style={{ marginTop: 50 }}>
- <Empty
-    image="https://gw.alipayobjects.com/zos/antfincdn/ZHrcdLPrvN/empty.svg"
-    style={{ height: "400px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
-    description={
-      <span style={{ color: "red", fontSize: "20px" }}>
+                      <Empty
+                        image="https://gw.alipayobjects.com/zos/antfincdn/ZHrcdLPrvN/empty.svg"
+                        style={{ height: "400px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
+                        description={
+                          <span style={{ color: "red", fontSize: "20px" }}>
                             Chưa có dữ liệu
                           </span>
                         }
                       />
                     </div>
-                  ) :   statisticContent
-                    }
+                  ) : statisticContent
+                }
                     
                  
-                  </>
-        </div>
-      </Spin>
-    
+              </>
+            </div>
+          </Spin>
+      }
   </div>
   );
 };

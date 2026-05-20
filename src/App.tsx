@@ -61,6 +61,9 @@ import FbAds from 'pages/FbAds';
 import MonitorBackup from 'pages/MonitorBackup';
 import AimDashboardPage from 'pages/AimDashboardPage';
 import AddAimDashboardPageMobile from 'pages/AimDashboardPageMobile';
+import AddAimDashboardTVPage from 'pages/AimDashboardPageTV';
+import DashboardCSKHPage from 'pages/DashboardCSKHPage';
+import DashboardCSKHV2Page from 'pages/DashboardCSKHV2Page';
 
 const routes = [
   {
@@ -215,6 +218,18 @@ const routes = [
    {
     path: '/leadreport/mobile',
     element: <AddAimDashboardPageMobile />, // trang lỗi
+  },
+  {
+    path: '/leadreport/tv',
+    element: <AddAimDashboardTVPage />, // trang lỗi
+  },
+  {
+    path: '/dashboardCSKH/desktop',
+    element: <DashboardCSKHPage />, // trang lỗi
+  },
+  {
+    path: '/dashboardCSKHV2',
+    element: <DashboardCSKHV2Page />, // trang lỗi
   },
   //  {
   //   path: '/chart',

@@ -122,7 +122,7 @@ interface TableSection {
 }
 const REPORT_URL =
   "https://app.powerbi.com/view?r=eyJrIjoiNjUxYjg2YjUtODk1YS00MmMyLWI2MjgtN2Q3MTAwOGNlMDQ5IiwidCI6ImRiNzNmYWY2LTViYzMtNDkwZC1iMGQ4LTZlZWE1ZTU4YTQ0NiIsImMiOjEwfQ%3D%3D&pageName=e7454753d5ac9ac6daa9";
-const AddAimDashboardPage: React.FC = () => {
+const DashboardCSKHPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const today = new Date();
   const todayStr = today.toLocaleDateString("vi-VN"); // 14/11/2025
@@ -170,15 +170,7 @@ const defaultMonth = month.find((m) => m.value === currentMonthValue);
   const [listCategories, setListCategories] = useState<any[]>(
     storageCategories ? JSON.parse(storageCategories) : []
   );
- 
-
-
-
-
   const params = new URLSearchParams(window.location.search);
-
-
-
 const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
   try {
     return employeeId ? JSON.parse(employeeId) : "";
@@ -194,11 +186,7 @@ const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
   month:  undefined as unknown as DropdownData,
   year:  "2025",
 });
- 
     const [tableLoading, setTableLoading] = useState(false);
-
-
-
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [conversation, setConversation] = useState<any>({
     category_id: undefined as unknown as DropdownData,
@@ -220,7 +208,7 @@ const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
 
   useEffect(() => {
 
-    document.title = "Doctor Check- Hiệu quả đặt hẹn kênh Facebook Ads";
+    document.title = "Doctor Check - DASHBOARD CHĂM SÓC KHÁCH HÀNG";
   }, []);
   useEffect(() => {
      setFilterData({
@@ -691,7 +679,7 @@ const statisticContent = useMemo(
                 }} />
                  <div style={headerStyle}>
         
-                <div style={{ display: "flex", justifyContent:"start",alignItems:"center",gap:20}}>        <div style={titleStyle}>Tổng leads {filterData?.year} theo tháng</div>
+                <div style={{ display: "flex", justifyContent:"start",alignItems:"center",gap:20}}>        <div style={titleStyle}>DASHBOARD CHĂM SÓC KHÁCH HÀNG</div>
       <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 16 }}>
                 <div style={{ minWidth: "250px", maxWidth: "170px" }}>
                   <Dropdown
@@ -964,4 +952,4 @@ const tableCellStyle2: React.CSSProperties = {
     fontWeight: '600',
   };
 
-export default AddAimDashboardPage;
+export default DashboardCSKHPage;

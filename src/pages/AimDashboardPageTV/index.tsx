@@ -40,7 +40,7 @@ import { toast } from 'react-toastify';
 import { postVerifyAPI } from 'services/api/leadReportAPI';
 import { ApiResponse, DashboardResponse } from 'services/api/leadReportAPI/types';
 import { useAppDispatch, useAppSelector } from "store/hooks";
-import { getListLeadReport, getListLeadReportDay } from 'store/leadReport';
+import { getListLeadReport, getListLeadReport2, getListLeadReportDay } from 'store/leadReport';
 import mapModifiers, { downloadBlobPDF, downloadBlobPDFOpenLink, previewBlobPDFOpenLink } from "utils/functions";
 
 import DashboardTables from './DashboardTables';
@@ -63,9 +63,7 @@ export function hasPinCookie(): boolean {
 // Set PIN vào cookie (sống 24h)
 export function setPinCookie(pin: string) {
   if (typeof document === "undefined") return
-   const expiresDate = new Date()
-  expiresDate.setMonth(expiresDate.getMonth() + 1) // +1 tháng đúng theo lịch
-  const expires = expiresDate.toUTCString()
+  const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString()
   document.cookie = `${PIN_COOKIE_NAME}=${pin}; expires=${expires}; path=/; SameSite=Lax`
 }
 
@@ -113,7 +111,7 @@ interface TableRow {
   valueDaily?: number;    // giá trị ngày
   isEditable?: boolean;
 }
-const getDaysInMonth = (month: number, year: number) => {
+export const getDaysInMonth = (month: number, year: number) => {
   return new Date(year, month, 0).getDate(); 
 };
 interface TableSection {
@@ -122,7 +120,7 @@ interface TableSection {
 }
 const REPORT_URL =
   "https://app.powerbi.com/view?r=eyJrIjoiNjUxYjg2YjUtODk1YS00MmMyLWI2MjgtN2Q3MTAwOGNlMDQ5IiwidCI6ImRiNzNmYWY2LTViYzMtNDkwZC1iMGQ4LTZlZWE1ZTU4YTQ0NiIsImMiOjEwfQ%3D%3D&pageName=e7454753d5ac9ac6daa9";
-const AddAimDashboardPage: React.FC = () => {
+const AddAimDashboardTVPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const today = new Date();
   const todayStr = today.toLocaleDateString("vi-VN"); // 14/11/2025
@@ -137,6 +135,7 @@ const defaultMonth = month.find((m) => m.value === currentMonthValue);
   const [loading, setLoading] = useState(true)
   const [isLead, setIsLead] = useState(true);
   const storeLeadReport = useAppSelector((state) => state.leadReport.listLeadReport);
+   const storeLeadReport2 = useAppSelector((state) => state.leadReport.listLeadReport2);
    const storeLeadReportDay = useAppSelector((state) => state.leadReport.listLeadReportDay);
   const storeLeadReportLoading = useAppSelector((state) => state.leadReport.isLoadingListLeadReport);
   const storagelistPhares = localStorage.getItem("listPharesBeforeExams");
@@ -188,7 +187,7 @@ const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
 });
    const [data, setData] = useState<ApiResponse>(storeLeadReport)
 
-
+const [data2, setData2] = useState<ApiResponse>(storeLeadReport2)
   const [filterData, setFilterData] = useState({
   brand:  undefined as unknown as DropdownData,
   month:  undefined as unknown as DropdownData,
@@ -219,21 +218,42 @@ const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
   }, []);
 
   useEffect(() => {
-
-    document.title = "Doctor Check- Hiệu quả đặt hẹn kênh Facebook Ads";
-  }, []);
-  useEffect(() => {
-     setFilterData({
+ setFilterData({
     month:  month.find((m) => m.value === currentMonthValue) || month[0],
     brand: defaultBrand,
     year: currentYear,
   });
-  dispatch( getListLeadReport({
-  PageId: "131869073337682",
-  Month: new Date().getMonth() + 1,   // tháng hiện tại
-  Year: new Date().getFullYear(),     // năm hiện tại
-}))
-  },[])
+    document.title = "Doctor Check- Hiệu quả đặt hẹn kênh Facebook Ads";
+  }, []);
+ useEffect(() => {
+  const fetchData = () => {
+    dispatch(
+      getListLeadReport({
+        PageId: "131869073337682",
+        Month: new Date().getMonth() + 1,
+        Year: new Date().getFullYear(),
+      })
+    )
+
+    dispatch(
+      getListLeadReport2({
+        PageId: "556113784260055",
+        Month: new Date().getMonth() + 1,
+        Year: new Date().getFullYear(),
+      })
+    )
+  }
+
+  // gọi ngay 1 lần khi render
+  fetchData()
+
+  // gọi lặp lại mỗi 10 giây
+   const interval = setInterval(fetchData, 300000)
+
+  // cleanup khi component unmount
+  return () => clearInterval(interval)
+}, [])
+
   useEffect(() => {
     if (storeLeadReport.status)
     {
@@ -242,7 +262,13 @@ const [stateEmployeeId, setStateEmployeeId] = useState<any>(() => {
     }
    
   }, [storeLeadReport]);
-
+  useEffect(() => {
+    if (storeLeadReport2.status)
+    {
+   setData2(storeLeadReport2)
+    }
+   
+  }, [storeLeadReport2]);
 const inputRef = useRef<HTMLInputElement | null>(null);
     const { mutate: postVerify } = useMutation(
           'post-footer-form',
@@ -251,9 +277,10 @@ const inputRef = useRef<HTMLInputElement | null>(null);
            onSuccess: (data) => {
   if (data.status === true) {
     toast.success(data.message || "Lưu mục tiêu thành công");
+
     // Lưu PIN (ghép 4 ô code thành string, ví dụ "4212")
     const pin = code.join("");
-    setPinCookie(data.data);
+    setPinCookie(pin);
 
     // Đã verify thành công -> không cần OTP nữa
     setIsOTP(true);
@@ -568,14 +595,14 @@ const statisticContent = useMemo(
       style={{
         backgroundColor: "transparent",
         padding: "0px 0px",
-        maxHeight: "83vh",
+        maxHeight: "96vh",
         display: "flex",
         flexDirection: "column",
         justifyContent: "start",
         overflowY: "auto",
       }}
     >
-      <DashboardTables dataRaw={data} handleSeenDay={handleSeenDay} dataFilter={ filterData} />
+      <DashboardTables dataRaw={data} dataRaw2={data2} handleSeenDay={handleSeenDay} dataFilter={ filterData}/>
     </div>
   ),
   [data]
@@ -594,8 +621,7 @@ const statisticContent = useMemo(
 
   return (
    <div className="p-apointment_list" style={{justifyContent:"center", paddingTop:10}}>
-      {
-        isOTP === false ? <OTPForm code={code} setCode={setCode} postVerify={postVerify} setIsLoading={setIsLoading} isLoading={isLoading}/> :<Spin
+        <Spin
         spinning={loadingPage}
         size="large"
         indicator={
@@ -678,8 +704,8 @@ const statisticContent = useMemo(
             }
             /> */}
              <div style={containerStyle}>
-              {/* Header with Logo and Title */}
-              <div style={{
+            
+              {/* <div style={{
                 borderBottom: '3px solid #0d6abf',
                 paddingBottom: '3px',
                 paddingLeft: 10,
@@ -753,25 +779,16 @@ const statisticContent = useMemo(
                     }}
                   />
                 </div>
-                {/* <div style={{ minWidth: "50px" }}>
-                  <Button
-                    style={{ borderRadius: 5, width: "100%" }}
-                    onClick={() => {
-                      handleUpdate();
-                    }}
-                  >
-                    <Typography content="Xem" />
-                  </Button>
-                </div> */}
+              
                   </div></div>
                 <div></div>
       </div>
-              </div>
+              </div> */}
               
      
 
-      {/* Stats Section */}
-      <div style={statsContainerStyle}>
+     
+      {/* <div style={statsContainerStyle}>
         <div style={statItemStyle}>
           <span style={statLabelStyle}>
             Hiệu quả đặt hẹn kênh Facebook Ads
@@ -787,7 +804,7 @@ const statisticContent = useMemo(
         <div style={statItemStyle}>
           <span style={statLabelStyle2}>Ngày xem báo cáo: <strong>  {todayStr}</strong></span>
         </div>
-      </div>
+      </div> */}
     </div>
                     {/* Nếu chưa chọn filter thì vẫn hiển thị Empty như bạn đang làm */}
                  
@@ -811,7 +828,6 @@ const statisticContent = useMemo(
                   </>
         </div>
       </Spin>
-}
       
     
   </div>
@@ -945,7 +961,7 @@ const tableCellStyle2: React.CSSProperties = {
     fontWeight: '700',
     textAnchor: "start",
     fill: "rgb(51, 51, 51)",
-    fontSize: "17px",
+    fontSize: "20px",
     fontStyle: "normal",
     
   };
@@ -954,7 +970,7 @@ const tableCellStyle2: React.CSSProperties = {
     fontWeight: '500',
     textAnchor: "start",
     fill: "rgb(51, 51, 51)",
-    fontSize: "17px",
+    fontSize: "20px",
     fontStyle: "normal",
     
   };
@@ -964,4 +980,4 @@ const tableCellStyle2: React.CSSProperties = {
     fontWeight: '600',
   };
 
-export default AddAimDashboardPage;
+export default AddAimDashboardTVPage;
